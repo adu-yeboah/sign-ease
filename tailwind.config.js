@@ -7,11 +7,12 @@ module.exports = {
   theme: {
     extend: {
       colors: {
-        primary: '#4666B1',
-        primaryLight: '#A2D2FF',
-        onPrimary: '#101840',
-        secondaryLight: '#D9D9D938',
-        secondary: '#CDCDD2',
+        primary: '#48CAE4',
+        primaryLight: '#90E0EF',
+        
+        secondaryLight: '#00776',
+        secondary: '#0077B6',
+
         pending: '#FFC42E',
         pendingLight: '#FFC42E3B',
         overlay: '#0000004D',
@@ -31,7 +32,9 @@ module.exports = {
         padding5: '10px',
       },
       fontFamily: {
-        custom: ['Roboto', 'Kanit']
+        Kanit: ['Kanit'],
+        Kumar: ['Kumar'],
+        Roboto: ['Roboto', 'sans-serif']
       },
       fontSize: {
         h1: ['30px', '36px'], // Font size followed by line height
