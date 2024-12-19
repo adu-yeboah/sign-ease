@@ -34,6 +34,9 @@
           "recordAudioAndroid": true
         }
       ]
+    ],
+    "assetBundlePatterns": [
+      "assets/**/*"
     ]
   }
 }

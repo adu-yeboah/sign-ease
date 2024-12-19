@@ -8,7 +8,7 @@ export default function Route() {
   const Stack = createNativeStackNavigator()
 
   return (
-    <Stack.Navigator screenOptions={{ headerShown: false }} initialRouteName='Live'>
+    <Stack.Navigator screenOptions={{ headerShown: false }} initialRouteName='Home'>
       <Stack.Screen name='Welcome' component={WelcomeScreen} />
       <Stack.Screen name='Home' component={HomeScreen} />
       <Stack.Screen name='Live' component={LiveScreen} />

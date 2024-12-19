@@ -33,7 +33,7 @@ module.exports = {
       },
       fontFamily: {
         Kanit: ['Kanit'],
-        Kumar: ['Kumar'],
+        ALmendra_SC: ['ALmendra_SC'],
         Roboto: ['Roboto', 'sans-serif']
       },
       fontSize: {

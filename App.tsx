@@ -9,7 +9,7 @@ export default function App() {
   const [fontsLoaded] = useFonts({
     'Roboto': require('./assets/fonts/Roboto/Roboto-Regular.ttf'),
     'Kanit': require('./assets/fonts/Kanit/Kanit-Regular.ttf'),
-    'Kumar': require('./assets/fonts/Kumar_One/KumarOne-Regular.ttf'),
+    'ALmendra_SC': require('./assets/fonts/Almendra_SC/AlmendraSC-Regular.ttf'),
   });
 
   if (!fontsLoaded) {
