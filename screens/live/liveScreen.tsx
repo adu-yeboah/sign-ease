@@ -1,64 +1,91 @@
 import { Camera, CameraType } from 'expo-camera';
-import { useState, useEffect } from 'react';
-import { Button, Dimensions, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
-import * as tf from '@tensorflow/tfjs';
-import '@tensorflow/tfjs-react-native';
-import { bundleResourceIO } from '@tensorflow/tfjs-react-native';
+import { useState, useEffect, useRef } from 'react';
+import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
-const { width, height } = Dimensions.get("window");
+const API_URL = "http://your-server-ip:8000/predict/";
 
 export default function LiveScreen() {
     const [facing, setFacing] = useState<CameraType>('back');
     const [permission, requestPermission] = Camera.useCameraPermissions();
-    const [model, setModel] = useState<tf.GraphModel | null>(null);
-    const [prediction, setPrediction] = useState('');
-    const [loading, setLoading] = useState(true);
+    const [prediction, setPrediction] = useState('Waiting...');
+    const [isStreaming, setIsStreaming] = useState(false);
+    const cameraRef = useRef<Camera | null>(null);
+    const socket = useRef<WebSocket | null>(null);
 
     useEffect(() => {
-        const loadModel = async () => {
-            await tf.ready();
-            const modelJSON = require('../../assets/model/model.json');
-            const loadedModel = await tf.loadGraphModel(bundleResourceIO(modelJSON));
-            setModel(loadedModel);
-            setLoading(false);
-        };
-
-        loadModel();
+        requestPermission();
     }, []);
 
-    if (!permission) {
-        return <View />;
-    }
+    useEffect(() => {
+        socket.current = new WebSocket("ws://your-api-url/ws");
 
-    if (!permission.granted) {
-        return (
-            <View style={styles.permissionContainer}>
-                <Text>Camera permission is required to use this feature.</Text>
-                <Button title="Grant Permission" onPress={requestPermission} />
-            </View>
-        );
-    }
+        socket.current.onmessage = (event) => {
+            const data = JSON.parse(event.data);
+            setPrediction(data.prediction);
+        };
 
-    const toggleCameraFacing = () => {
-        setFacing((current) => (current === 'back' ? 'front' : 'back'));
+        return () => socket.current?.close();
+    }, []);
+
+    const startStreaming = async () => {
+        setIsStreaming(true);
+        while (isStreaming) {
+            await captureFrameAndSend();
+            await new Promise((resolve) => setTimeout(resolve, 100)); // Send every 100ms
+        }
     };
+
+    const stopStreaming = () => {
+        setIsStreaming(false);
+    };
+    const captureFrameAndSend = async () => {
+        if (!cameraRef.current) return;
+    
+        const photo = await cameraRef.current.takePictureAsync({
+            base64: true,
+            quality: 0.5, // Reduce quality to 50% for speed
+        });
+    
+        const formData = new FormData();
+        formData.append("file", {
+            uri: photo.uri,
+            type: "image/jpeg",
+            name: "frame.jpg",
+        });
+    
+        try {
+            const response = await fetch(API_URL, {
+                method: "POST",
+                body: formData,
+                headers: { "Content-Type": "multipart/form-data" },
+            });
+    
+            const data = await response.json();
+            setPrediction(`${data.prediction} (${(data.confidence * 100).toFixed(1)}%)`);
+        } catch (error) {
+            console.error("Error sending frame:", error);
+        }
+    };
+    
 
     return (
         <View style={styles.container}>
-            <Camera style={styles.camera} type={facing}>
-                <View style={styles.navigation}>
-                    <TouchableOpacity onPress={toggleCameraFacing}>
-                        <Text style={{ color: 'white' }}>Flip Camera</Text>
+            <Camera ref={cameraRef} style={styles.camera} type={facing} />
+            <View style={styles.controls}>
+                <TouchableOpacity onPress={() => setFacing(facing === 'back' ? 'front' : 'back')}>
+                    <Text style={styles.button}>Flip Camera</Text>
+                </TouchableOpacity>
+                {isStreaming ? (
+                    <TouchableOpacity onPress={stopStreaming}>
+                        <Text style={styles.button}>Stop</Text>
                     </TouchableOpacity>
-                </View>
-            </Camera>
-            <View style={styles.buttonContainer}>
-                {loading ? (
-                    <Text>Loading model...</Text>
                 ) : (
-                    <Text>{prediction ? `Prediction: ${prediction}` : 'No prediction available.'}</Text>
+                    <TouchableOpacity onPress={startStreaming}>
+                        <Text style={styles.button}>Start</Text>
+                    </TouchableOpacity>
                 )}
             </View>
+            <Text style={styles.prediction}>{prediction}</Text>
         </View>
     );
 }
@@ -66,7 +93,7 @@ export default function LiveScreen() {
 const styles = StyleSheet.create({
     container: { flex: 1 },
     camera: { flex: 1 },
-    navigation: { position: 'absolute', top: 10, left: 10 },
-    permissionContainer: { flex: 1, justifyContent: 'center', alignItems: 'center' },
-    buttonContainer: { backgroundColor: 'white', padding: 20 },
+    controls: { position: 'absolute', bottom: 50, flexDirection: 'row', width: '100%', justifyContent: 'space-around' },
+    button: { color: 'white', fontSize: 18, padding: 10, backgroundColor: 'blue' },
+    prediction: { color: 'white', textAlign: 'center', fontSize: 20, marginTop: 20 },
 });
