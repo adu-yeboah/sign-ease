@@ -1,91 +1,178 @@
-import { Camera, CameraType } from 'expo-camera';
-import { useState, useEffect, useRef } from 'react';
-import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { useState, useEffect, useRef } from "react";
+import {
+    StyleSheet, Text, TouchableOpacity, View, ScrollView, ActivityIndicator
+} from "react-native";
+import { CameraView, CameraType, useCameraPermissions } from "expo-camera";
+import MaterialCommunityIcons from "@expo/vector-icons/MaterialCommunityIcons";
+import MaterialIcons from "@expo/vector-icons/MaterialIcons";
+import FontAwesome from '@expo/vector-icons/FontAwesome';
+import axios from "axios";
+import { useFlashMessage } from "../../context/flashmessageContext";
 
-const API_URL = "http://your-server-ip:8000/predict/";
+const API_URL = "https://sign-ease-backend.onrender.com/predict/";
+const WS_URL = "wss://sign-ease-backend.onrender.com/ws"; // WebSocket secure URL
 
 export default function LiveScreen() {
-    const [facing, setFacing] = useState<CameraType>('back');
-    const [permission, requestPermission] = Camera.useCameraPermissions();
-    const [prediction, setPrediction] = useState('Waiting...');
+    const { showFlashMessage } = useFlashMessage();
+
+    const [facing, setFacing] = useState<CameraType>("front");
+    const [prediction, setPrediction] = useState("Waiting...");
     const [isStreaming, setIsStreaming] = useState(false);
-    const cameraRef = useRef<Camera | null>(null);
+    const [isLoading, setIsLoading] = useState(false);
+    const [lastPrediction, setLastPrediction] = useState("");
+
+    const [permission, requestPermission] = useCameraPermissions();
+    const cameraRef = useRef<CameraView | null>(null);
     const socket = useRef<WebSocket | null>(null);
+    const intervalRef = useRef<NodeJS.Timeout | null>(null);
 
     useEffect(() => {
-        requestPermission();
-    }, []);
+        if (!permission) requestPermission();
+    }, [permission]);
 
     useEffect(() => {
-        socket.current = new WebSocket("ws://your-api-url/ws");
+        socket.current = new WebSocket(WS_URL);
 
+        socket.current.onopen = () => console.log("WebSocket Connected");
         socket.current.onmessage = (event) => {
-            const data = JSON.parse(event.data);
-            setPrediction(data.prediction);
+            const { prediction, confidence } = JSON.parse(event.data);
+            const newPrediction = `${prediction} (${(confidence * 100).toFixed(1)}%)`;
+
+            if (newPrediction !== lastPrediction) {
+                setPrediction(newPrediction);
+                setLastPrediction(newPrediction);
+            }
         };
+        socket.current.onerror = (error) => console.log("WebSocket Error:", error);
+        socket.current.onclose = () => console.log("WebSocket Disconnected");
 
         return () => socket.current?.close();
-    }, []);
+    }, [lastPrediction]);
 
-    const startStreaming = async () => {
-        setIsStreaming(true);
-        while (isStreaming) {
-            await captureFrameAndSend();
-            await new Promise((resolve) => setTimeout(resolve, 100)); // Send every 100ms
+    const toggleCameraFacing = () => {
+        setFacing((current) => (current === "back" ? "front" : "back"));
+    };
+
+    const startStreaming = () => {
+        if (!cameraRef.current) {
+            showFlashMessage("Camera not ready", "error");
+            return;
         }
+        setIsStreaming(true);
+        setIsLoading(true);
+        intervalRef.current = setInterval(captureFrameAndSend, 500); // Capture every 500ms
     };
 
     const stopStreaming = () => {
         setIsStreaming(false);
-    };
-    const captureFrameAndSend = async () => {
-        if (!cameraRef.current) return;
-    
-        const photo = await cameraRef.current.takePictureAsync({
-            base64: true,
-            quality: 0.5, // Reduce quality to 50% for speed
-        });
-    
-        const formData = new FormData();
-        formData.append("file", {
-            uri: photo.uri,
-            type: "image/jpeg",
-            name: "frame.jpg",
-        });
-    
-        try {
-            const response = await fetch(API_URL, {
-                method: "POST",
-                body: formData,
-                headers: { "Content-Type": "multipart/form-data" },
-            });
-    
-            const data = await response.json();
-            setPrediction(`${data.prediction} (${(data.confidence * 100).toFixed(1)}%)`);
-        } catch (error) {
-            console.error("Error sending frame:", error);
+        setIsLoading(false);
+        if (intervalRef.current) {
+            clearInterval(intervalRef.current);
+            intervalRef.current = null;
         }
     };
-    
 
-    return (
-        <View style={styles.container}>
-            <Camera ref={cameraRef} style={styles.camera} type={facing} />
-            <View style={styles.controls}>
-                <TouchableOpacity onPress={() => setFacing(facing === 'back' ? 'front' : 'back')}>
-                    <Text style={styles.button}>Flip Camera</Text>
-                </TouchableOpacity>
-                {isStreaming ? (
-                    <TouchableOpacity onPress={stopStreaming}>
-                        <Text style={styles.button}>Stop</Text>
-                    </TouchableOpacity>
-                ) : (
-                    <TouchableOpacity onPress={startStreaming}>
-                        <Text style={styles.button}>Start</Text>
+    const captureFrameAndSend = async () => {
+        if (!cameraRef.current || !isStreaming) return;
+
+        try {
+            const photo = await cameraRef.current.takePictureAsync({
+                base64: true,
+                quality: 0.5,
+            });
+
+            if (!photo?.uri) {
+                showFlashMessage("Camera capture failed", "error");
+                return;
+            }
+
+            const formData = new FormData();
+            formData.append("file", {
+                uri: photo.uri,
+                type: "image/jpeg",
+                name: "frame.jpg",
+            } as any);
+
+            const response = await axios.post(API_URL, formData, {
+                headers: {
+                    Accept: "application/json",
+                    "Content-Type": "multipart/form-data",
+                },
+                timeout: 10000,
+            });
+
+            const { prediction, confidence } = response.data;
+            const newPrediction = `${prediction} (${(confidence * 100).toFixed(1)}%)`;
+
+            if (newPrediction !== lastPrediction) {
+                setPrediction(newPrediction);
+                setLastPrediction(newPrediction);
+            }
+            setIsLoading(false);
+        } catch (error: any) {
+            let errorMessage = "An unknown error occurred";
+            if (axios.isAxiosError(error)) {
+                errorMessage = error.response?.data?.message || error.message;
+            } else if (error instanceof Error) {
+                errorMessage = error.message;
+            }
+            showFlashMessage(errorMessage, "error");
+            console.log(errorMessage);
+            
+            setIsLoading(false);
+        }
+    };
+
+    if (!permission?.granted) {
+        return (
+            <View style={styles.centeredView}>
+                <Text style={styles.permissionText}>
+                    {permission ? "We need camera permission" : "Checking permissions..."}
+                </Text>
+                {!permission && (
+                    <TouchableOpacity onPress={requestPermission} style={styles.button}>
+                        <Text style={styles.buttonText}>Grant Permission</Text>
                     </TouchableOpacity>
                 )}
             </View>
-            <Text style={styles.prediction}>{prediction}</Text>
+        );
+    }
+
+    return (
+        <View style={styles.container}>
+            <CameraView ref={cameraRef} style={styles.camera} facing={facing}>
+                <View style={styles.navBar}>
+                    <TouchableOpacity onPress={toggleCameraFacing}>
+                        <MaterialIcons name="arrow-back-ios-new" size={24} color="white" />
+                    </TouchableOpacity>
+                    <TouchableOpacity onPress={toggleCameraFacing}>
+                        <MaterialCommunityIcons name="camera-flip-outline" size={24} color="white" />
+                    </TouchableOpacity>
+                </View>
+
+                <ScrollView style={styles.translationContainer}>
+                    <View className="w-full flex flex-row justify-between items-center">
+                        <TouchableOpacity
+                            style={[styles.clearButton, isStreaming ? styles.disabledButton : {}]}
+                            onPress={startStreaming}
+                            disabled={isStreaming}
+                        >
+                            <MaterialIcons name="stream" size={24} color={isStreaming ? "gray" : "black"} />
+                        </TouchableOpacity>
+                        <TouchableOpacity
+                            style={styles.clearButton}
+                            onPress={stopStreaming}
+                        >
+                            <FontAwesome name="stop" size={24} color="red" />
+                        </TouchableOpacity>
+                    </View>
+                    {isLoading ? (
+                        <ActivityIndicator size="large" color="blue" />
+                    ) : (
+                        <Text style={styles.predictionText}>{prediction}</Text>
+                    )}
+                </ScrollView>
+            </CameraView>
         </View>
     );
 }
@@ -93,7 +180,29 @@ export default function LiveScreen() {
 const styles = StyleSheet.create({
     container: { flex: 1 },
     camera: { flex: 1 },
-    controls: { position: 'absolute', bottom: 50, flexDirection: 'row', width: '100%', justifyContent: 'space-around' },
-    button: { color: 'white', fontSize: 18, padding: 10, backgroundColor: 'blue' },
-    prediction: { color: 'white', textAlign: 'center', fontSize: 20, marginTop: 20 },
+    navBar: {
+        flexDirection: "row",
+        justifyContent: "space-between",
+        width: "100%",
+        position: "absolute",
+        top: 40,
+        paddingHorizontal: 20,
+    },
+    translationContainer: {
+        backgroundColor: "white",
+        position: "absolute",
+        bottom: 0,
+        width: "100%",
+        height: "40%",
+        borderTopLeftRadius: 20,
+        borderTopRightRadius: 20,
+        padding: 20,
+    },
+    clearButton: { padding: 10 },
+    disabledButton: { opacity: 0.5 },
+    predictionText: { fontSize: 18, textAlign: "center", marginTop: 10 },
+    centeredView: { flex: 1, justifyContent: "center", alignItems: "center" },
+    permissionText: { color: "white", fontSize: 18, textAlign: "center", marginBottom: 20 },
+    button: { backgroundColor: "blue", padding: 10, borderRadius: 10 },
+    buttonText: { color: "white", fontSize: 18, textAlign: "center" },
 });

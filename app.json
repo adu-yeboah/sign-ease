@@ -1,6 +1,6 @@
 {
   "expo": {
-    "name": "sign-ease",
+    "name": "sign ease",
     "slug": "sign-ease",
     "version": "1.0.0",
     "orientation": "portrait",
@@ -29,8 +29,8 @@
       [
         "expo-camera",
         {
-          "cameraPermission": "Allow $(PRODUCT_NAME) to access your camera",
-          "microphonePermission": "Allow $(PRODUCT_NAME) to access your microphone",
+          "cameraPermission": "Allow sign ease to access your camera",
+          "microphonePermission": "Allow sign ease to access your microphone",
           "recordAudioAndroid": true
         }
       ]

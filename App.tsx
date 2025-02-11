@@ -3,6 +3,7 @@ import WelcomeScreen from "./screens/welcome/welcomeScreen";
 import { useFonts } from "expo-font";
 import Route from "./navigation/route";
 import { NavigationContainer } from "@react-navigation/native";
+import { FlashMessageProvider } from "./context/flashmessageContext";
 
 export default function App() {
 
@@ -17,7 +18,9 @@ export default function App() {
   }
   return (
     <NavigationContainer>
-      <Route />
+      <FlashMessageProvider>
+        <Route />
+      </FlashMessageProvider>
     </NavigationContainer>
   );
 }
