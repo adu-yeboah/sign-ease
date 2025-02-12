@@ -19,7 +19,12 @@
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#ffffff"
-      }
+      },
+      "permissions": [
+        "android.permission.CAMERA",
+        "android.permission.RECORD_AUDIO"
+      ],
+      "package": "com.aduyeboah.signease"
     },
     "web": {
       "favicon": "./assets/adaptive-icon.png",
@@ -37,6 +42,12 @@
     ],
     "assetBundlePatterns": [
       "assets/**/*"
-    ]
+    ],
+    "extra": {
+      "eas": {
+        "projectId": "218f14a7-251f-4795-a59d-aeb88d4161fb"
+      }
+    },
+    "owner": "adu-yeboah"
   }
 }

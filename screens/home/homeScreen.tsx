@@ -34,7 +34,7 @@ export default function HomeScreen() {
                     </TouchableOpacity>
 
                     {/* Picture Translation */}
-                    <TouchableOpacity className="flex-row gap-5 justify-between relative w-full overflow-hidden bg-primary rounded-lg p-padding3">
+                    <TouchableOpacity className="flex-row gap-5 justify-between relative w-full overflow-hidden bg-primary rounded-lg p-padding3" onPress={() => navigation.navigate('Picture' as never)}>
                         <Image source={icons.pic} className="w-2/5" /> 
                         <View className="flex-1 flex-col gap-2">
                             <Text className="font-Kanit text-h3 w-full" numberOfLines={1}>

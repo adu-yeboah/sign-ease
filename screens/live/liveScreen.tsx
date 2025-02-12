@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import {
-    StyleSheet, Text, TouchableOpacity, View, ScrollView, ActivityIndicator
+    StyleSheet, Text, TouchableOpacity, View, ScrollView, ActivityIndicator, Animated, PanResponder
 } from "react-native";
 import { CameraView, CameraType, useCameraPermissions } from "expo-camera";
 import MaterialCommunityIcons from "@expo/vector-icons/MaterialCommunityIcons";
@@ -8,13 +8,14 @@ import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import FontAwesome from '@expo/vector-icons/FontAwesome';
 import axios from "axios";
 import { useFlashMessage } from "../../context/flashmessageContext";
+import { useNavigation } from "@react-navigation/native";
 
 const API_URL = "https://sign-ease-backend.onrender.com/predict/";
 const WS_URL = "wss://sign-ease-backend.onrender.com/ws"; // WebSocket secure URL
 
 export default function LiveScreen() {
     const { showFlashMessage } = useFlashMessage();
-
+    const navigate = useNavigation()
     const [facing, setFacing] = useState<CameraType>("front");
     const [prediction, setPrediction] = useState("Waiting...");
     const [isStreaming, setIsStreaming] = useState(false);
@@ -25,6 +26,9 @@ export default function LiveScreen() {
     const cameraRef = useRef<CameraView | null>(null);
     const socket = useRef<WebSocket | null>(null);
     const intervalRef = useRef<NodeJS.Timeout | null>(null);
+
+    const translationY = useRef(new Animated.Value(0)).current; // Animation state
+    const isVisible = useRef(true); // Track visibility state
 
     useEffect(() => {
         if (!permission) requestPermission();
@@ -118,10 +122,36 @@ export default function LiveScreen() {
             }
             showFlashMessage(errorMessage, "error");
             console.log(errorMessage);
-            
+
             setIsLoading(false);
         }
     };
+
+    const panResponder = PanResponder.create({
+        onMoveShouldSetPanResponder: (_, gestureState) => Math.abs(gestureState.dy) > 10,
+        onPanResponderMove: (_, gestureState) => {
+            translationY.setValue(gestureState.dy);
+        },
+        onPanResponderRelease: (_, gestureState) => {
+            if (gestureState.dy > 50) {
+                // Swipe down → Hide
+                isVisible.current = false;
+                Animated.timing(translationY, {
+                    toValue: 300, // Move it off-screen
+                    duration: 300,
+                    useNativeDriver: true,
+                }).start();
+            } else if (gestureState.dy < -50) {
+                // Swipe up → Show
+                isVisible.current = true;
+                Animated.timing(translationY, {
+                    toValue: 0, // Move back into view
+                    duration: 300,
+                    useNativeDriver: true,
+                }).start();
+            }
+        },
+    });
 
     if (!permission?.granted) {
         return (
@@ -142,7 +172,7 @@ export default function LiveScreen() {
         <View style={styles.container}>
             <CameraView ref={cameraRef} style={styles.camera} facing={facing}>
                 <View style={styles.navBar}>
-                    <TouchableOpacity onPress={toggleCameraFacing}>
+                    <TouchableOpacity onPress={() => navigate.goBack()}>
                         <MaterialIcons name="arrow-back-ios-new" size={24} color="white" />
                     </TouchableOpacity>
                     <TouchableOpacity onPress={toggleCameraFacing}>
@@ -150,7 +180,9 @@ export default function LiveScreen() {
                     </TouchableOpacity>
                 </View>
 
-                <ScrollView style={styles.translationContainer}>
+                <Animated.View
+                    style={[styles.translationContainer]}
+                >
                     <View className="w-full flex flex-row justify-between items-center">
                         <TouchableOpacity
                             style={[styles.clearButton, isStreaming ? styles.disabledButton : {}]}
@@ -159,10 +191,7 @@ export default function LiveScreen() {
                         >
                             <MaterialIcons name="stream" size={24} color={isStreaming ? "gray" : "black"} />
                         </TouchableOpacity>
-                        <TouchableOpacity
-                            style={styles.clearButton}
-                            onPress={stopStreaming}
-                        >
+                        <TouchableOpacity style={styles.clearButton} onPress={stopStreaming}>
                             <FontAwesome name="stop" size={24} color="red" />
                         </TouchableOpacity>
                     </View>
@@ -171,7 +200,7 @@ export default function LiveScreen() {
                     ) : (
                         <Text style={styles.predictionText}>{prediction}</Text>
                     )}
-                </ScrollView>
+                </Animated.View>
             </CameraView>
         </View>
     );
@@ -191,7 +220,7 @@ const styles = StyleSheet.create({
     translationContainer: {
         backgroundColor: "white",
         position: "absolute",
-        bottom: 0,
+        bottom: -300,
         width: "100%",
         height: "40%",
         borderTopLeftRadius: 20,
@@ -206,3 +235,4 @@ const styles = StyleSheet.create({
     button: { backgroundColor: "blue", padding: 10, borderRadius: 10 },
     buttonText: { color: "white", fontSize: 18, textAlign: "center" },
 });
+
