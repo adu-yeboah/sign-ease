@@ -11,7 +11,7 @@ import { useFlashMessage } from "../../context/flashmessageContext";
 import { useNavigation } from "@react-navigation/native";
 
 const API_URL = "https://sign-ease-backend.onrender.com/predict/";
-const WS_URL = "wss://sign-ease-backend.onrender.com/ws"; // WebSocket secure URL
+const WS_URL = "wss://sign-ease-backend.onrender.com/ws";
 
 export default function LiveScreen() {
     const { showFlashMessage } = useFlashMessage();
@@ -35,7 +35,7 @@ export default function LiveScreen() {
     }, [permission]);
 
     useEffect(() => {
-        socket.current = new WebSocket(WS_URL);
+        socket.current = new WebSocket(WS_URL as unknown as string);
 
         socket.current.onopen = () => console.log("WebSocket Connected");
         socket.current.onmessage = (event) => {
@@ -64,7 +64,7 @@ export default function LiveScreen() {
         }
         setIsStreaming(true);
         setIsLoading(true);
-        intervalRef.current = setInterval(captureFrameAndSend, 500); // Capture every 500ms
+        intervalRef.current = setInterval(captureFrameAndSend, 500); 
     };
 
     const stopStreaming = () => {
@@ -104,6 +104,7 @@ export default function LiveScreen() {
                 },
                 timeout: 10000,
             });
+            console.log(response.data);
 
             const { prediction, confidence } = response.data;
             const newPrediction = `${prediction} (${(confidence * 100).toFixed(1)}%)`;
@@ -128,6 +129,7 @@ export default function LiveScreen() {
     };
 
     const panResponder = PanResponder.create({
+        onStartShouldSetPanResponder: () => true,
         onMoveShouldSetPanResponder: (_, gestureState) => Math.abs(gestureState.dy) > 10,
         onPanResponderMove: (_, gestureState) => {
             translationY.setValue(gestureState.dy);
@@ -147,6 +149,12 @@ export default function LiveScreen() {
                 Animated.timing(translationY, {
                     toValue: 0, // Move back into view
                     duration: 300,
+                    useNativeDriver: true,
+                }).start();
+            } else {
+                // If the swipe is not significant, reset the position
+                Animated.spring(translationY, {
+                    toValue: 0,
                     useNativeDriver: true,
                 }).start();
             }
@@ -172,7 +180,7 @@ export default function LiveScreen() {
         <View style={styles.container}>
             <CameraView ref={cameraRef} style={styles.camera} facing={facing}>
                 <View style={styles.navBar}>
-                    <TouchableOpacity onPress={() => navigate.goBack()}>
+                    <TouchableOpacity onPress={() => navigate.goBack()} className="p-2 bg-grey1 rounded-full items-center justify-center">
                         <MaterialIcons name="arrow-back-ios-new" size={24} color="white" />
                     </TouchableOpacity>
                     <TouchableOpacity onPress={toggleCameraFacing}>
@@ -181,7 +189,8 @@ export default function LiveScreen() {
                 </View>
 
                 <Animated.View
-                    style={[styles.translationContainer]}
+                    style={[styles.translationContainer, { transform: [{ translateY: translationY }] }]}
+                    {...panResponder.panHandlers}
                 >
                     <View className="w-full flex flex-row justify-between items-center">
                         <TouchableOpacity
@@ -220,7 +229,7 @@ const styles = StyleSheet.create({
     translationContainer: {
         backgroundColor: "white",
         position: "absolute",
-        bottom: -300,
+        bottom: 0,
         width: "100%",
         height: "40%",
         borderTopLeftRadius: 20,
@@ -235,4 +244,3 @@ const styles = StyleSheet.create({
     button: { backgroundColor: "blue", padding: 10, borderRadius: 10 },
     buttonText: { color: "white", fontSize: 18, textAlign: "center" },
 });
-
