@@ -1,6 +1,6 @@
 {
   "expo": {
-    "name": "sign ease",
+    "name": "sign-ease",
     "slug": "sign-ease",
     "version": "1.0.0",
     "orientation": "portrait",
@@ -20,34 +20,21 @@
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#ffffff"
       },
-      "permissions": [
-        "android.permission.CAMERA",
-        "android.permission.RECORD_AUDIO"
-      ],
-      "package": "com.aduyeboah.signease"
+      "edgeToEdgeEnabled": true
     },
     "web": {
-      "favicon": "./assets/adaptive-icon.png",
-      "bundler": "metro"
+      "favicon": "./assets/favicon.png"
     },
-    "plugins": [
-      [
-        "expo-camera",
-        {
-          "cameraPermission": "Allow sign ease to access your camera",
-          "microphonePermission": "Allow sign ease to access your microphone",
-          "recordAudioAndroid": true
-        }
-      ]
-    ],
-    "assetBundlePatterns": [
-      "assets/**/*"
-    ],
     "extra": {
       "eas": {
         "projectId": "218f14a7-251f-4795-a59d-aeb88d4161fb"
       }
     },
-    "owner": "adu-yeboah"
+    "runtimeVersion": {
+      "policy": "appVersion"
+    },
+    "updates": {
+      "url": "https://u.expo.dev/218f14a7-251f-4795-a59d-aeb88d4161fb"
+    }
   }
 }
