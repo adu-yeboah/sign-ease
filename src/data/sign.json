@@ -1,0 +1,40 @@
+[
+  {
+    "id": "1",
+    "name": "A",
+    "description": "The letter A in ASL",
+    "imageUrl": "https://example.com/a.jpg",
+    "category": "alphabet"
+  },
+  {
+    "id": "2",
+    "name": "B",
+    "description": "The letter B in ASL",
+    "imageUrl": "https://example.com/b.jpg",
+    "category": "alphabet"
+  },
+  {
+    "id": "3",
+    "name": "Hello",
+    "description": "Greeting someone",
+    "imageUrl": "https://example.com/hello.jpg",
+    "gifUrl": "https://example.com/hello.gif",
+    "category": "simple"
+  },
+  {
+    "id": "4",
+    "name": "Thank You",
+    "description": "Expressing gratitude",
+    "imageUrl": "https://example.com/thankyou.jpg",
+    "gifUrl": "https://example.com/thankyou.gif",
+    "category": "simple"
+  },
+  {
+    "id": "5",
+    "name": "Friend",
+    "description": "Referring to a friend",
+    "imageUrl": "https://example.com/friend.jpg",
+    "gifUrl": "https://example.com/friend.gif",
+    "category": "advanced"
+  }
+]
