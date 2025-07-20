@@ -9,17 +9,15 @@ import signsData from '../data/sign.json';
 import SafeWrapper from '../components/ui/SafeWrapper';
 
 const ProgressScreen = () => {
-    // In a real app, you would track progress in state or context
     const progressSigns = signsData.map((sign: any) => ({
         ...sign,
-        learned: Math.random() > 0.5, // Randomly mark as learned for demo
+        learned: Math.random() > 0.5,
     }));
 
     const learnedCount = progressSigns.filter(sign => sign.learned).length;
     const totalCount = progressSigns.length;
     const progressPercentage = (learnedCount / totalCount) * 100;
 
-    // Group signs by category
     const categories = {
         alphabet: progressSigns.filter(sign => sign.category === 'alphabet'),
         simple: progressSigns.filter(sign => sign.category === 'simple'),
@@ -45,7 +43,7 @@ const ProgressScreen = () => {
                             Your Progress
                         </Text>
                     </View>
-                    <View className="w-6" /> {/* Spacer for alignment */}
+                    <View className="w-6" />
                 </View>
 
                 <View className="px-6">

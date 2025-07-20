@@ -11,14 +11,14 @@ interface AnimatedButtonProps {
   duration?: number;
   iterationCount?: number | 'infinite';
   className?: string;
-  icon?: string;
+  icon?: any;
 }
 
 const AnimatedButton: React.FC<AnimatedButtonProps> = ({
   title,
   description,
   onPress,
-  animation = 'fadeInUp',
+  animation = 'fadeInDown',
   duration = 1000,
   iterationCount,
   className = '',

@@ -1,20 +1,21 @@
 import React from 'react';
-import { View, Text, Image, ScrollView, TouchableOpacity } from 'react-native';
+import { View, Text, Image, ScrollView, TouchableOpacity, Dimensions } from 'react-native';
+import Carousel from 'react-native-reanimated-carousel';
 import * as Animatable from 'react-native-animatable';
 import { useRoute, useNavigation } from '@react-navigation/native';
-import signsData from "../data/sign.json";
-import AnimatedButton from '../components/Button';
-import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
-import { Sign } from '../types/utils';
-import SafeWrapper from '../components/ui/SafeWrapper';
+import SafeWrapper from '@/components/ui/SafeWrapper';
+import AnimatedButton from '@/components/Button';
+import alphabetData from '@/data/alphabet';
+
+const { width: screenWidth } = Dimensions.get('window');
 
 const SignDetailScreen = () => {
   const route = useRoute<any>();
   const navigation = useNavigation();
   const { signId } = route.params;
 
-  const sign = signsData.find((s: any) => s.id === signId);
+  const sign = alphabetData.find((s: any) => s.id === signId);
 
   const getCategoryColor = () => {
     if (!sign) return 'bg-accent-500';
@@ -25,6 +26,16 @@ const SignDetailScreen = () => {
       default: return 'bg-accent-500';
     }
   };
+
+  const renderCarouselItem = ({ item }: { item: any }) => (
+    <View className="flex-1 items-center justify-center">
+      <Image
+        source={item}
+        className="w-full h-64"
+        resizeMode="contain"
+      />
+    </View>
+  );
 
   if (!sign) {
     return (
@@ -46,7 +57,7 @@ const SignDetailScreen = () => {
         <Text className="text-xl font-bold text-accent-700 font-display">
           Sign Details
         </Text>
-        <View className="w-6" /> {/* Spacer for alignment */}
+        <View className="w-6" />
       </View>
 
       <ScrollView
@@ -67,16 +78,20 @@ const SignDetailScreen = () => {
               {sign.category.charAt(0).toUpperCase() + sign.category.slice(1)} Sign
             </Text>
 
-            <View className="bg-white/20 rounded-xl p-4 mb-4">
-              {sign.gifUrl ? (
-                <Image
-                  source={{ uri: sign.gifUrl }}
-                  className="w-64 h-64"
-                  resizeMode="contain"
+            <View className="bg-white/20 rounded-xl mb-4 w-full h-72">
+              {sign.images && sign.images.length > 0 ? (
+                <Carousel
+                  loop
+                  width={screenWidth - 80}
+                  height={256}
+                  data={sign.images}
+                  renderItem={renderCarouselItem}
+                  autoPlay={false}
+                  scrollAnimationDuration={500}
                 />
               ) : (
                 <Image
-                  source={{ uri: sign.imageUrl }}
+                  source={require("../../assets/signs/alphabet/A/angle1.jpg")}
                   className="w-64 h-64"
                   resizeMode="contain"
                 />
@@ -114,30 +129,6 @@ const SignDetailScreen = () => {
             icon="help-circle-outline"
           />
         </Animatable.View>
-
-        {sign.relatedSigns && sign.relatedSigns.length > 0 && (
-          <Animatable.View
-            animation="fadeInUp"
-            duration={800}
-            delay={600}
-            className="mt-8"
-          >
-            <Text className="text-lg font-bold text-accent-700 font-display mb-3">
-              Related Signs
-            </Text>
-
-            <ScrollView horizontal showsHorizontalScrollIndicator={false} className="py-2">
-              {sign.relatedSigns.map(relatedSign => (
-                <TouchableOpacity key={relatedSign.id} className="mr-3">
-                  <View className="bg-accent-100 rounded-lg p-3 items-center w-24">
-                    <Image source={{ uri: relatedSign.imageUrl }} className="w-12 h-12 mb-1" />
-                    <Text className="text-accent-700 text-xs text-center">{relatedSign.name}</Text>
-                  </View>
-                </TouchableOpacity>
-              ))}
-            </ScrollView>
-          </Animatable.View>
-        )}
       </ScrollView>
     </SafeWrapper>
   );

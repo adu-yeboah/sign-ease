@@ -6,8 +6,8 @@ import {
 } from 'react-native';
 import React from 'react';
 import { StatusBar } from 'expo-status-bar';
-import { ScreenWrapperProps } from '@/src/types/utils';
 import { LinearGradient } from 'expo-linear-gradient';
+import { ScreenWrapperProps } from '@/types/utils';
 
 export default function SafeWrapper({
     style,
