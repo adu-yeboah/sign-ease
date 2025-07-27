@@ -1,4 +1,4 @@
-import { View, Text, Switch, TouchableOpacity, StyleSheet, Linking } from 'react-native'
+import { View, Text, Switch, TouchableOpacity, Linking } from 'react-native'
 import React, { useState } from 'react'
 import SafeWrapper from '../components/ui/SafeWrapper'
 import { Ionicons } from '@expo/vector-icons'

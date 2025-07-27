@@ -65,7 +65,7 @@ const HomeScreen = () => {
             <AnimatedButton
               title="Take a Quiz"
               description="Test your knowledge"
-              onPress={() => navigation.navigate('Quiz', { signId: '1' })}
+              onPress={() => navigation.navigate('QuizDisplay')}
               animation="pulse"
               duration={1600}
               iterationCount="infinite"

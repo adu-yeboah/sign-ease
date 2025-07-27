@@ -6,6 +6,10 @@ import SignListScreen from '@/screens/SignList';
 import SignDetailScreen from '@/screens/SignDetail';
 import QuizScreen from '@/screens/QuizScreen';
 import Settings from '@/screens/Settings';
+import DisplayQuiz from '@/screens/DisplayQuiz';
+import Login from '@/screens/auth/Login';
+import Register from '@/screens/auth/Register';
+import LiveQuiz from '@/screens/LiveQuiz';
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
 
@@ -19,7 +23,29 @@ export default function AppNavigator() {
           animation: 'fade',
           animationDuration: 300,
         }}
+        initialRouteName='Home'
       >
+
+        {/* Authentication */}
+        <Stack.Screen
+          name="Login"
+          component={Login}
+          options={({ route }) => ({
+            animation: 'slide_from_right',
+            gestureEnabled: true,
+          })}
+        />
+
+        <Stack.Screen
+          name="Register"
+          component={Register}
+          options={({ route }) => ({
+            animation: 'slide_from_right',
+            gestureEnabled: true,
+          })}
+        />
+
+
         {/* Main Tab Navigator */}
         <Stack.Screen
           name="Home"
@@ -56,6 +82,25 @@ export default function AppNavigator() {
             gestureEnabled: false,
           }}
         />
+
+        <Stack.Screen
+          name="QuizDisplay"
+          component={DisplayQuiz}
+          options={{
+            animation: 'slide_from_bottom',
+            gestureEnabled: false,
+          }}
+        />
+
+         <Stack.Screen
+          name="LiveQuiz"
+          component={LiveQuiz}
+          options={{
+            animation: 'slide_from_bottom',
+            gestureEnabled: false,
+          }}
+        />
+
 
         {/* Notification Screen */}
         <Stack.Screen

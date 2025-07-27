@@ -1,15 +1,8 @@
 import React, { useEffect } from 'react';
-import { StatusBar } from 'expo-status-bar';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
-import {
-  Inter_400Regular,
-  Inter_500Medium,
-  Inter_700Bold,
-  useFonts,
-} from '@expo-google-fonts/inter';
-import * as SplashScreen from 'expo-splash-screen';
 import AppNavigator from './src/routes/mainNavigation';
 import "./global.css"
+import { UpdatePrompt } from '@/components/Updates';
 // Prevent the splash screen from auto-hiding
 // SplashScreen.preventAutoHideAsync();
 
@@ -32,6 +25,7 @@ export default function App() {
 
   return (
     <SafeAreaProvider>
+      <UpdatePrompt />
       <AppNavigator />
     </SafeAreaProvider>
   );
