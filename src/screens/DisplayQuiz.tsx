@@ -11,7 +11,8 @@ type QuizCategory = {
     id: string;
     title: string;
     description: string;
-    type: 'alphabets' | 'simpleWords' | 'advancedWords';
+    type: 'alphabet' | 'simple' | 'advanced';
+    label: string;
 };
 
 export default function DisplayQuiz() {
@@ -22,25 +23,27 @@ export default function DisplayQuiz() {
             id: '1',
             title: 'Alphabets',
             description: 'Learn and practice sign language for each alphabet letter',
-            type: 'alphabets'
+            type: 'alphabet',
+            label: 'Alphabets'
         },
         {
             id: '2',
             title: 'Simple Words',
             description: 'Basic everyday words and phrases in sign language',
-            type: 'simpleWords'
+            type: 'simple',
+            label: 'Simple Words'
         },
         {
             id: '3',
             title: 'Advanced Words',
             description: 'Complex words and expressions for more proficient users',
-            type: 'advancedWords'
+            type: 'advanced',
+            label: 'Advanced Words'
         }
     ];
 
     const handleCategoryPress = (category: QuizCategory) => {
         navigation.navigate('Quiz', {
-            categoryId: category.id,
             categoryType: category.type
         });
     };
@@ -68,7 +71,7 @@ export default function DisplayQuiz() {
                     animation={"fadeInUp"}
                     duration={1000}
                     key={category.id} className="bg-white rounded-xl p-5 mb-5 shadow-sm shadow-black/10">
-                        <Text className="text-xl font-semibold text-gray-700 mb-2">{category.title}</Text>
+                        <Text className="text-xl font-semibold text-gray-700 mb-2">{category.label}</Text>
                         <Text className="text-sm text-gray-600 mb-4 leading-5">{category.description}</Text>
 
                         <View className="flex-col justify-between gap-2">

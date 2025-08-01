@@ -32,7 +32,7 @@ export type RootStackParamList = {
   Register: undefined;
   SignList: { category: 'alphabet' | 'simple' | 'advanced' };
   SignDetail: { signId: string };
-  Quiz: { signId: string };
+  Quiz: { categoryType: string };
   QuizDisplay: undefined;
   LiveQuiz:  { category: string };
   Notification: undefined;

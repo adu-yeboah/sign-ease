@@ -8,55 +8,36 @@ import { QuizQuestion } from '../types/utils';
 import signsData from "../data/sign.json";
 import AnimatedButton from '../components/Button';
 import SafeWrapper from '../components/ui/SafeWrapper';
+import { AlphabetQuiz } from '@/data/quiz/alphabet';
+import { SimpleWordsQuiz } from '@/data/quiz/simplewords';
+import { AdvanceQuiz } from '@/data/quiz/advance';
 
-const mockQuestions: QuizQuestion[] = [
-  {
-    signId: '1',
-    question: "What letter is this?",
-    options: ["Z", "B", "D", "F"],
-    correctAnswer: "D",
-    image: require('../../assets/signs/alphabet/D/angle1.jpg')
-  },
-  {
-    signId: '2',
-    question: "What letter is this?",
-    options: ["A", "R", "C", "K"],
-    correctAnswer: "C",
-    image: require('../../assets/signs/alphabet/C/angle1.jpg')
-  },
-  {
-    signId: '3',
-    question: "What letter is this?",
-    options: ["A", "B", "U", "D"],
-    correctAnswer: "A",
-    image: require('../../assets/signs/alphabet/B/angle1.jpg'),
-  }, {
-    signId: '4',
-    question: "What letter is this?",
-    options: ["A", "G", "C", "I"],
-    correctAnswer: "A",
-    image: require('../../assets/signs/alphabet/A/angle1.jpg'),
-  },
-];
 
 const QuizScreen = () => {
   const route = useRoute<any>();
   const navigation = useNavigation();
-  const { signId } = route.params;
+  const { categoryType } = route.params;
 
+   const initialQuestions = React.useMemo(() => {
+    switch (categoryType) {
+      case 'alphabet': return AlphabetQuiz;
+      case 'simple': return SimpleWordsQuiz;
+      case 'advanced': return AdvanceQuiz;
+      default: return [];
+    }
+  }, [categoryType]);
+
+  const [questions, setQuestions] = useState<QuizQuestion[]>(initialQuestions);
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [selectedAnswer, setSelectedAnswer] = useState<string | null>(null);
   const [score, setScore] = useState(0);
   const [quizCompleted, setQuizCompleted] = useState(false);
 
-  // Find questions for this sign
-  const questions = mockQuestions
+  
   const currentQuestion = questions[currentQuestionIndex];
-  const currentSign = signsData.find(s => s.id === signId);
 
-  const getCategoryColor = () => {
-    if (!currentSign) return 'bg-accent-500';
-    switch (currentSign.category) {
+  const getCategoryColor = (category: string) => {
+    switch (category) {
       case 'alphabet': return 'bg-accent-500';
       case 'simple': return 'bg-primary-500';
       case 'advanced': return 'bg-secondary-500';
@@ -91,7 +72,7 @@ const QuizScreen = () => {
           <Animatable.View
             animation="bounceIn"
             duration={1000}
-            className={`${getCategoryColor()} rounded-2xl p-8 w-full items-center`}
+            className={`${getCategoryColor(categoryType)} rounded-2xl p-8 w-full items-center`}
           >
             <Text className="text-3xl font-bold text-white font-display mb-4">
               Quiz Complete!
@@ -157,7 +138,7 @@ const QuizScreen = () => {
           </Text>
           <View className="bg-accent-100 rounded-full h-2 flex-1 mx-3">
             <View
-              className={`${getCategoryColor()} h-2 rounded-full`}
+              className={`${getCategoryColor(categoryType)} h-2 rounded-full`}
               style={{ width: `${((currentQuestionIndex + 1) / questions.length) * 100}%` }}
             />
           </View>
@@ -170,7 +151,7 @@ const QuizScreen = () => {
         <Animatable.View
           animation="fadeInUp"
           duration={600}
-          className={`${getCategoryColor()} rounded-2xl p-6 mb-6`}
+          className={`${getCategoryColor(categoryType)} rounded-2xl p-6 mb-6`}
         >
           <Text className="text-white text-xl font-display font-bold mb-4 text-center">
             {currentQuestion.question}
