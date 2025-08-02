@@ -7,12 +7,15 @@ import { Ionicons } from '@expo/vector-icons';
 import SafeWrapper from '@/components/ui/SafeWrapper';
 import AnimatedButton from '@/components/Button';
 import alphabetData from '@/data/alphabet';
+import { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import { RootStackParamList } from '@/types/utils';
 
 const { width: screenWidth } = Dimensions.get('window');
+type SignDetailNavigationProp = NativeStackNavigationProp<RootStackParamList, 'SignDetail'>;
 
 const SignDetailScreen = () => {
   const route = useRoute<any>();
-  const navigation = useNavigation();
+  const navigation = useNavigation<SignDetailNavigationProp>();
   const { signId } = route.params;
 
   const sign = alphabetData.find((s: any) => s.id === signId);
@@ -121,13 +124,14 @@ const SignDetailScreen = () => {
           className="px-4"
         >
           <AnimatedButton
-            title="Take Quiz on This Sign"
-            onPress={() => { }}
+            title="Next Sign"
+            onPress={() => navigation.navigate('SignDetail', { signId: sign.id })}
             className="w-full bg-warning-500"
             animation="pulse"
             iterationCount="infinite"
             icon="help-circle-outline"
           />
+
         </Animatable.View>
       </ScrollView>
     </SafeWrapper>

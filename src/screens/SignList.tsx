@@ -3,7 +3,6 @@ import { FlatList, Text, View, TouchableOpacity } from 'react-native';
 import { useRoute, useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import SignCard from '../components/SignCard';
-import signsData from "../data/sign.json";
 import { Ionicons } from '@expo/vector-icons';
 import { RootStackParamList } from '@/types/utils';
 import SafeWrapper from '@/components/ui/SafeWrapper';
