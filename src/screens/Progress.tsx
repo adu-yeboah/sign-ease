@@ -5,21 +5,20 @@ import * as Animatable from 'react-native-animatable';
 import ProgressCard from '../components/ProgressCard';
 import signsData from '../data/sign.json';
 import SafeWrapper from '../components/ui/SafeWrapper';
+import { useSign } from '@/hooks/useSign';
 
 type CategoryType = 'all' | 'alphabet' | 'simple' | 'advanced';
 
 const ProgressScreen = () => {
     const [activeCategory, setActiveCategory] = useState<CategoryType>('all');
-    
-    const progressSigns = signsData.map((sign: any) => ({
-        ...sign,
-        learned: Math.random() > 0.5,
-    }));
+    const { alphabet } = useSign()
+
+    const progressSigns = alphabet
 
     // Filter signs based on active category
     const filteredSigns = activeCategory === 'all' 
-        ? progressSigns 
-        : progressSigns.filter(sign => sign.category === activeCategory);
+        ? alphabet
+        : alphabet
 
     const learnedCount = filteredSigns.filter(sign => sign.learned).length;
     const totalCount = filteredSigns.length;

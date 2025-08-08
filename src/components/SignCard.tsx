@@ -1,16 +1,23 @@
 import React from 'react';
-import { View, Text, Image, TouchableOpacity } from 'react-native';
+import { View, Text, TouchableOpacity } from 'react-native';
 import * as Animatable from 'react-native-animatable';
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import { RootStackParamList, Sign } from '../types/utils';
+import { RootStackParamList } from '../types/utils';
 import { Entypo } from '@expo/vector-icons';
 import { SignType } from '@/types/sign';
+import { useSign } from '@/hooks/useSign';
 
 type SignDetailNavigationProp = NativeStackNavigationProp<RootStackParamList, 'SignDetail'>;
 
 const SignCard: React.FC<{ sign: SignType; categoryColor: string }> = ({ sign, categoryColor }) => {
   const navigation = useNavigation<SignDetailNavigationProp>();
+  const { markAsLearned } = useSign()
+
+  const handlePress = () => {
+    navigation.navigate('SignDetail', { signId: sign.id })
+    markAsLearned(sign.id)
+  }
 
   return (
     <Animatable.View
@@ -19,7 +26,7 @@ const SignCard: React.FC<{ sign: SignType; categoryColor: string }> = ({ sign, c
       className={`w-[48%] mb-5 rounded-xl overflow-hidden ${categoryColor}`}
     >
       <TouchableOpacity
-        onPress={() => navigation.navigate('SignDetail', { signId: sign.id })}
+        onPress={handlePress}
         activeOpacity={0.8}
       >
         <View className="p-4">

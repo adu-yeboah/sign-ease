@@ -1,23 +1,39 @@
 import React, { useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, Image } from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, Image, Alert } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { Ionicons } from '@expo/vector-icons';
 import { RootStackParamList } from '@/types/utils';
 import SafeWrapper from '@/components/ui/SafeWrapper';
 import AnimatedButton from '@/components/Button';
+import { useAuth } from '@/context/authContext';
 
 type SignupScreenNavigationProp = NativeStackNavigationProp<RootStackParamList, 'Register'>;
 
-export default function SignupScreen () {
+export default function SignupScreen() {
   const navigation = useNavigation<SignupScreenNavigationProp>();
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
+  const { register, loading, error } = useAuth();
 
-  const handleSignup = () => {
-    navigation.replace('Home');
+  const handleSignup = async () => {
+    if (!name || !email || !password) {
+      Alert.alert('Error', 'Please fill in all fields');
+      return;
+    }
+
+    try {
+      await register({
+        // id: Math.random().toString(36).substring(7),
+        fullName: name,
+        email,
+      });
+      navigation.replace('Home');
+    } catch (err) {
+      Alert.alert('Registration Failed', error || 'Could not create account');
+    }
   };
 
   return (
@@ -79,11 +95,12 @@ export default function SignupScreen () {
         </View>
 
         <AnimatedButton
-          title="Sign Up"
+          title={loading ? "Creating Account..." : "Sign Up"}
           onPress={handleSignup}
           animation="fadeIn"
           duration={500}
           className="w-full bg-primary-500 mb-4"
+          disabled={loading}
         />
 
         <View className="flex-row justify-center mt-4">
@@ -95,5 +112,4 @@ export default function SignupScreen () {
       </View>
     </SafeWrapper>
   );
-};
-
+}

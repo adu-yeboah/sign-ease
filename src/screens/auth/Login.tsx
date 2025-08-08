@@ -1,22 +1,34 @@
 import React, { useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, Image } from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, Image, Alert } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { Ionicons } from '@expo/vector-icons';
 import { RootStackParamList } from '@/types/utils';
 import SafeWrapper from '@/components/ui/SafeWrapper';
 import AnimatedButton from '@/components/Button';
+import { useAuth } from '@/context/authContext';
 
 type LoginScreenNavigationProp = NativeStackNavigationProp<RootStackParamList, 'Login'>;
 
-export default function LoginScreen () {
+export default function LoginScreen() {
   const navigation = useNavigation<LoginScreenNavigationProp>();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
+  const { login, loading, error } = useAuth();
 
-  const handleLogin = () => {
-    navigation.replace('Home');
+  const handleLogin = async () => {
+    if (!email || !password) {
+      Alert.alert('Error', 'Please fill in all fields');
+      return;
+    }
+    
+    try {
+      await login(email, password);
+      navigation.replace('Home');
+    } catch (err) {
+      Alert.alert('Login Failed', error || 'Invalid credentials');
+    }
   };
 
   return (
@@ -68,22 +80,21 @@ export default function LoginScreen () {
         </View>
 
         <AnimatedButton
-          title="Sign In"
+          title={loading ? "Signing In..." : "Sign In"}
           onPress={handleLogin}
           animation="fadeIn"
           duration={500}
           className="w-full bg-primary-500 mb-4"
+          disabled={loading}
         />
 
-       
         <View className="flex-row justify-center mt-4">
           <Text className="text-gray-500">Don't have an account? </Text>
-          <TouchableOpacity onPress={() => navigation.navigate('Register' as never)}>
+          <TouchableOpacity onPress={() => navigation.navigate('Register')}>
             <Text className="text-primary-500 font-semibold">Sign up</Text>
           </TouchableOpacity>
         </View>
       </View>
     </SafeWrapper>
   );
-};
-
+}

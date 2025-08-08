@@ -12,6 +12,7 @@ interface AnimatedButtonProps {
   iterationCount?: number | 'infinite';
   className?: string;
   icon?: any;
+  disabled?: boolean
 }
 
 const AnimatedButton: React.FC<AnimatedButtonProps> = ({
@@ -23,6 +24,7 @@ const AnimatedButton: React.FC<AnimatedButtonProps> = ({
   iterationCount,
   className = '',
   icon,
+  disabled,
 }) => {
   return (
     <Animatable.View 
@@ -32,7 +34,7 @@ const AnimatedButton: React.FC<AnimatedButtonProps> = ({
       className="w-full"
     >
       <TouchableOpacity
-        className={`py-4 px-5 rounded-xl flex-row items-center ${className}`}
+        className={`py-4 px-5 rounded-xl flex-row items-center ${className} ${disabled && 'opacity-60'}`}
         onPress={onPress}
         activeOpacity={0.8}
       >
