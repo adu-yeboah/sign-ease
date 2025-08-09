@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState } from "react";
 import { SignType } from "@/types/sign";
 import { SignService } from "@/service/signServices";
 
@@ -7,7 +7,7 @@ export const useSign = () => {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
 
-    const markAsLearned = useCallback(async (id: string) => {
+    const markAsLearned = async (id: string) => {
         try {
             await SignService.signLearn(id);
             const updatedSigns = await SignService.loadSigns();
@@ -16,40 +16,39 @@ export const useSign = () => {
             setError("Failed to mark sign as learned");
             console.error(err);
         }
-    }, []);
+    };
 
-    // Load signs on initial render
     useEffect(() => {
+        let isMounted = true;
         const loadData = async () => {
             try {
-                setLoading(true);
                 const signs = await SignService.loadSigns();
-                setAlphabet(signs);
+                if (isMounted) {
+                    setAlphabet(signs);
+                }
             } catch (err) {
-                setError("Failed to load signs");
+                if (isMounted) {
+                    setError("Failed to load signs");
+                }
                 console.error(err);
             } finally {
-                setLoading(false);
+                if (isMounted) {
+                    setLoading(false);
+                }
             }
         };
 
         loadData();
-    }, []);
 
-    const saveSigns = async () => {
-        try {
-            await SignService.saveData();
-        } catch (err) {
-            setError("Failed to save signs");
-            console.error(err);
-        }
-    };
+        return () => {
+            isMounted = false;
+        };
+    }, []);
 
     return {
         alphabet,
         loading,
         error,
         markAsLearned,
-        saveSigns,
     };
 };

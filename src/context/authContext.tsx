@@ -59,9 +59,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     try {
       setLoading(true);
       setError("");
-      
-      // In a real app, you would send this to an API
-      // For this example, we'll just save it directly
       await AsyncStorage.setItem("user", JSON.stringify(newUser));
       setUser(newUser);
     } catch (err) {

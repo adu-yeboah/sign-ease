@@ -6,28 +6,30 @@ import SignCard from '../components/SignCard';
 import { Ionicons } from '@expo/vector-icons';
 import { RootStackParamList } from '@/types/utils';
 import SafeWrapper from '@/components/ui/SafeWrapper';
-import { SignType } from '@/types/sign';
-import alphabetData from '@/data/alphabet';
+import { useSign } from '@/hooks/useSign';
 
 type SignListNavigationProp = NativeStackNavigationProp<RootStackParamList, 'SignList'>;
 
 const SignListScreen = () => {
+  const { alphabet }  = useSign()
+  
   const route = useRoute<any>();
   const navigation = useNavigation<SignListNavigationProp>();
   const { category } = route.params;
-  const [data, setData] = useState<SignType[]>([]);
 
-  useEffect(() => {
+ const data = React.useMemo(() => {
     try {
       switch (category) {
-        case 'alphabet': setData(alphabetData); break;
-        case 'simple': setData([]); break;
-        case 'advance': setData([]); break;
+        case 'alphabet': return alphabet;
+        case 'simple': return []; 
+        case 'advanced': return []; 
+        default: return [];
       }
     } catch (error) {
-      console.log(error)
+      console.error("Error filtering data:", error);
+      return [];
     }
-  }, [])
+  }, [alphabet]);
 
   const getCategoryColor = () => {
     switch (category) {

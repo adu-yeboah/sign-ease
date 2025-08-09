@@ -23,7 +23,7 @@ const SignCard: React.FC<{ sign: SignType; categoryColor: string }> = ({ sign, c
     <Animatable.View
       animation="fadeInUp"
       duration={1000}
-      className={`w-[48%] mb-5 rounded-xl overflow-hidden ${categoryColor}`}
+      className={`w-[48%] relative mb-5 rounded-xl overflow-hidden ${categoryColor}`}
     >
       <TouchableOpacity
         onPress={handlePress}
@@ -60,11 +60,8 @@ const SignCard: React.FC<{ sign: SignType; categoryColor: string }> = ({ sign, c
             </Text>
 
             {sign.learned && (
-              <View className="mt-2 bg-white/30 px-3 py-1 rounded-full">
-                <Text className="text-white text-xs font-bold flex-row gap-2">
-                  <Entypo name="star" size={24} color="black" />
-                  Learned
-                </Text>
+              <View className=" absolute bottom-0 right-0 mt-2  rounded-full">
+                <Entypo name="star" size={24} color="yellow" />
               </View>
             )}
           </View>

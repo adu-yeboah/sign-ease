@@ -9,14 +9,15 @@ import DisplayQuiz from '@/screens/DisplayQuiz';
 import Login from '@/screens/auth/Login';
 import Register from '@/screens/auth/Register';
 import LiveQuiz from '@/screens/LiveQuiz';
-import { useAuth } from '@/context/authContext';
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
+const user =  AsyncStorage.getItem("user")
 
 
 export default function AppNavigator() {
-  const { user } = useAuth()
+
   return (
     <Stack.Navigator
       screenOptions={{

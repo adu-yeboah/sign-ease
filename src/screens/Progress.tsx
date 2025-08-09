@@ -12,7 +12,8 @@ type CategoryType = 'all' | 'alphabet' | 'simple' | 'advanced';
 const ProgressScreen = () => {
     const [activeCategory, setActiveCategory] = useState<CategoryType>('all');
     const { alphabet } = useSign()
-
+    console.log(alphabet);
+    
     const progressSigns = alphabet
 
     // Filter signs based on active category
