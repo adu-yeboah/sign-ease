@@ -3,7 +3,7 @@ export type SignType = {
     name: string;
     images: string[];
     description: string;
-    category: string;
+    category: 'alphabet' | 'simple' | 'advanced';
     learned?: boolean;
     imageUrl?: any;
 }

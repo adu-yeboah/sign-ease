@@ -4,14 +4,16 @@ import { SignService } from "@/service/signServices";
 
 export const useSign = () => {
     const [alphabet, setAlphabet] = useState<SignType[]>([]);
+    const [simple, setSimple] = useState<SignType[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
 
-    const markAsLearned = async (id: string) => {
+    const markAsLearned = async (id: string, category: string) => {
         try {
-            await SignService.signLearn(id);
+            await SignService.signLearn(id, category);
             const updatedSigns = await SignService.loadSigns();
-            setAlphabet(updatedSigns);
+            setAlphabet(updatedSigns.salphabet);
+            setSimple(updatedSigns.ssimple);
         } catch (err) {
             setError("Failed to mark sign as learned");
             console.error(err);
@@ -24,7 +26,8 @@ export const useSign = () => {
             try {
                 const signs = await SignService.loadSigns();
                 if (isMounted) {
-                    setAlphabet(signs);
+                    setAlphabet(signs.salphabet || []);
+                    setSimple(signs.ssimple || []);
                 }
             } catch (err) {
                 if (isMounted) {
@@ -45,8 +48,13 @@ export const useSign = () => {
         };
     }, []);
 
+   
+    const allSigns = [...alphabet, ...simple];
+
     return {
         alphabet,
+        simple,
+        allSigns, 
         loading,
         error,
         markAsLearned,

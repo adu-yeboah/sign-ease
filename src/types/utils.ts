@@ -36,4 +36,5 @@ export type RootStackParamList = {
   QuizDisplay: undefined;
   LiveQuiz:  { category: string };
   Notification: undefined;
+  SignDetailVideo: { signId: string };
 };

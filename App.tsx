@@ -22,7 +22,7 @@ export default function App() {
 
   useEffect(() => {
     if (fontsLoaded) {
-      SplashScreen.hide();
+      SplashScreen.hideAsync();
     }
   }, [fontsLoaded]);
 

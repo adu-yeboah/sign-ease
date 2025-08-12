@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 import { FlatList, Text, View, TouchableOpacity } from 'react-native';
 import { useRoute, useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
@@ -11,7 +11,7 @@ import { useSign } from '@/hooks/useSign';
 type SignListNavigationProp = NativeStackNavigationProp<RootStackParamList, 'SignList'>;
 
 const SignListScreen = () => {
-  const { alphabet }  = useSign()
+  const { alphabet, simple }  = useSign()
   
   const route = useRoute<any>();
   const navigation = useNavigation<SignListNavigationProp>();
@@ -21,7 +21,7 @@ const SignListScreen = () => {
     try {
       switch (category) {
         case 'alphabet': return alphabet;
-        case 'simple': return []; 
+        case 'simple': return simple; 
         case 'advanced': return []; 
         default: return [];
       }
@@ -29,7 +29,7 @@ const SignListScreen = () => {
       console.error("Error filtering data:", error);
       return [];
     }
-  }, [alphabet]);
+  }, [alphabet, simple]);
 
   const getCategoryColor = () => {
     switch (category) {

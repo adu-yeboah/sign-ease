@@ -15,8 +15,13 @@ const SignCard: React.FC<{ sign: SignType; categoryColor: string }> = ({ sign, c
   const { markAsLearned } = useSign()
 
   const handlePress = () => {
-    navigation.navigate('SignDetail', { signId: sign.id })
-    markAsLearned(sign.id)
+    if (sign.category == "alphabet") {
+      navigation.navigate('SignDetail', { signId: sign.id })
+      markAsLearned(sign.id, sign.category)
+    } else {
+      navigation.navigate('SignDetailVideo', { signId: sign.id })
+      markAsLearned(sign.id, sign.category)
+    }
   }
 
   return (

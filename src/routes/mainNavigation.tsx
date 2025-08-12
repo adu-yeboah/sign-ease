@@ -10,10 +10,11 @@ import Login from '@/screens/auth/Login';
 import Register from '@/screens/auth/Register';
 import LiveQuiz from '@/screens/LiveQuiz';
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import SignDetailVideoScreen from '@/screens/signDetailVideo';
 
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
-const user =  AsyncStorage.getItem("user")
+const user = AsyncStorage.getItem("user")
 
 
 export default function AppNavigator() {
@@ -26,7 +27,7 @@ export default function AppNavigator() {
         animation: 'fade',
         animationDuration: 300,
       }}
-      initialRouteName={user ? 'Home' : 'Login'}
+      initialRouteName='Home'
     >
 
       {/* Authentication */}
@@ -76,6 +77,17 @@ export default function AppNavigator() {
         }}
       />
 
+      {/* Sign Detail View */}
+      <Stack.Screen
+        name="SignDetailVideo"
+        component={SignDetailVideoScreen}
+        options={{
+          animation: 'slide_from_right',
+          gestureEnabled: true,
+          presentation: 'card',
+        }}
+      />
+
       {/* Quiz Screen */}
       <Stack.Screen
         name="Quiz"
@@ -103,7 +115,6 @@ export default function AppNavigator() {
           gestureEnabled: false,
         }}
       />
-
 
       {/* Notification Screen */}
       <Stack.Screen

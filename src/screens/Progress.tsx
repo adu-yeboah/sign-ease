@@ -3,7 +3,6 @@ import { View, Text, FlatList, TouchableOpacity } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import * as Animatable from 'react-native-animatable';
 import ProgressCard from '../components/ProgressCard';
-import signsData from '../data/sign.json';
 import SafeWrapper from '../components/ui/SafeWrapper';
 import { useSign } from '@/hooks/useSign';
 
@@ -11,17 +10,27 @@ type CategoryType = 'all' | 'alphabet' | 'simple' | 'advanced';
 
 const ProgressScreen = () => {
     const [activeCategory, setActiveCategory] = useState<CategoryType>('all');
-    const { alphabet } = useSign()
-    console.log(alphabet);
+    const { alphabet, allSigns, simple } = useSign()
+    const progressSigns = allSigns
+
     
-    const progressSigns = alphabet
-
     // Filter signs based on active category
-    const filteredSigns = activeCategory === 'all' 
-        ? alphabet
-        : alphabet
+    const filteredSigns = () => {
+        switch (activeCategory) {
+            case "all":
+                return allSigns
+            case "alphabet":
+                return alphabet;
+            case "advanced":
+                return simple; 
+            case "simple":
+                return simple;
+            default:
+                return [];
+        }
+    };
 
-    const learnedCount = filteredSigns.filter(sign => sign.learned).length;
+    const learnedCount = filteredSigns().filter(sign => sign.learned).length;
     const totalCount = filteredSigns.length;
     const progressPercentage = totalCount > 0 ? (learnedCount / totalCount) * 100 : 0;
 
@@ -123,8 +132,8 @@ const ProgressScreen = () => {
                             const percent = total > 0 ? (learned / total) * 100 : 0;
 
                             return (
-                                <TouchableOpacity 
-                                    key={category} 
+                                <TouchableOpacity
+                                    key={category}
                                     className="items-center flex-1"
                                     onPress={() => setActiveCategory(category as CategoryType)}
                                 >
@@ -145,7 +154,7 @@ const ProgressScreen = () => {
 
             {/* Signs List */}
             <FlatList
-                data={filteredSigns}
+                data={filteredSigns()}
                 keyExtractor={(item) => item.id}
                 renderItem={({ item }) => (
                     <Animatable.View
