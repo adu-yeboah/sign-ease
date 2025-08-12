@@ -1,62 +1,57 @@
-import { useEffect, useState } from "react";
-import { SignType } from "@/types/sign";
-import { SignService } from "@/service/signServices";
+import { useEffect, useState } from 'react';
+import { SignType, SignCategory } from '@/types/sign';
+import { signService } from '@/service/signServices';
 
 export const useSign = () => {
-    const [alphabet, setAlphabet] = useState<SignType[]>([]);
-    const [simple, setSimple] = useState<SignType[]>([]);
-    const [loading, setLoading] = useState(true);
-    const [error, setError] = useState<string | null>(null);
+  const [signs, setSigns] = useState<SignType[]>([]);
+  const [progress, setProgress] = useState<Record<SignCategory, { learned: number; total: number }>>();
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-    const markAsLearned = async (id: string, category: string) => {
-        try {
-            await SignService.signLearn(id, category);
-            const updatedSigns = await SignService.loadSigns();
-            setAlphabet(updatedSigns.salphabet);
-            setSimple(updatedSigns.ssimple);
-        } catch (err) {
-            setError("Failed to mark sign as learned");
-            console.error(err);
-        }
+  // Load all signs and progress on mount
+  useEffect(() => {
+    const loadData = async () => {
+      try {
+        const [loadedSigns, loadedProgress] = await Promise.all([
+          signService.loadAllSigns(),
+          signService.getProgressByCategory(),
+        ]);
+        setSigns(loadedSigns);
+        setProgress(loadedProgress);
+      } catch (err) {
+        setError("Failed to load signs");
+        console.error(err);
+      } finally {
+        setLoading(false);
+      }
     };
+    loadData();
+  }, []);
 
-    useEffect(() => {
-        let isMounted = true;
-        const loadData = async () => {
-            try {
-                const signs = await SignService.loadSigns();
-                if (isMounted) {
-                    setAlphabet(signs.salphabet || []);
-                    setSimple(signs.ssimple || []);
-                }
-            } catch (err) {
-                if (isMounted) {
-                    setError("Failed to load signs");
-                }
-                console.error(err);
-            } finally {
-                if (isMounted) {
-                    setLoading(false);
-                }
-            }
-        };
+  // Mark a sign as learned
+  const markAsLearned = async (id: string) => {
+    try {
+      const updatedSigns = await signService.updateSign(id, { learned: true });
+      const updatedProgress = await signService.getProgressByCategory();
+      setSigns(updatedSigns);
+      setProgress(updatedProgress);
+    } catch (err) {
+      setError("Failed to update sign");
+      console.error(err);
+    }
+  };
 
-        loadData();
+  // Get signs by category
+  const getSignsByCategory = (category: SignCategory) => {
+    return signs.filter(sign => sign.category === category);
+  };
 
-        return () => {
-            isMounted = false;
-        };
-    }, []);
-
-   
-    const allSigns = [...alphabet, ...simple];
-
-    return {
-        alphabet,
-        simple,
-        allSigns, 
-        loading,
-        error,
-        markAsLearned,
-    };
+  return {
+    signs,
+    progress,
+    loading,
+    error,
+    markAsLearned,
+    getSignsByCategory,
+  };
 };

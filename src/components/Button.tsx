@@ -6,7 +6,7 @@ import { Ionicons } from '@expo/vector-icons';
 interface AnimatedButtonProps {
   title: string;
   description?: string;
-  onPress: () => void;
+  onPress?: () => void;
   animation?: string;
   duration?: number;
   iterationCount?: number | 'infinite';

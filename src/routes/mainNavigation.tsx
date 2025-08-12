@@ -3,14 +3,15 @@ import { RootStackParamList } from '@/types/utils';
 import BottomTabNavigator from './tabNavigation';
 import SignListScreen from '@/screens/SignList';
 import SignDetailScreen from '@/screens/SignDetail';
-import QuizScreen from '@/screens/QuizScreen';
+import QuizScreen from '@/screens/quizes/QuizScreen';
 import Settings from '@/screens/Settings';
-import DisplayQuiz from '@/screens/DisplayQuiz';
+import DisplayQuiz from '@/screens/quizes/DisplayQuiz';
 import Login from '@/screens/auth/Login';
 import Register from '@/screens/auth/Register';
-import LiveQuiz from '@/screens/LiveQuiz';
+import LiveQuiz from '@/screens/quizes/LiveQuiz';
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import SignDetailVideoScreen from '@/screens/signDetailVideo';
+import DailyChallenges from '@/screens/quizes/DailyChallenges';
 
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
@@ -88,7 +89,7 @@ export default function AppNavigator() {
         }}
       />
 
-      {/* Quiz Screen */}
+{/* Quiz Screens */}
       <Stack.Screen
         name="Quiz"
         component={QuizScreen}
@@ -115,6 +116,17 @@ export default function AppNavigator() {
           gestureEnabled: false,
         }}
       />
+
+      <Stack.Screen
+        name="DailyChallenge"
+        component={DailyChallenges}
+        options={{
+          animation: 'slide_from_bottom',
+          gestureEnabled: false,
+        }}
+      />
+
+
 
       {/* Notification Screen */}
       <Stack.Screen

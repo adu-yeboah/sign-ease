@@ -35,6 +35,7 @@ export type RootStackParamList = {
   Quiz: { categoryType: string };
   QuizDisplay: undefined;
   LiveQuiz:  { category: string };
+  DailyChallenge: undefined;
   Notification: undefined;
   SignDetailVideo: { signId: string };
 };

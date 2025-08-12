@@ -3,6 +3,7 @@ import React, { useState } from 'react'
 import SafeWrapper from '../components/ui/SafeWrapper'
 import { Ionicons } from '@expo/vector-icons'
 import { useNavigation } from '@react-navigation/native'
+import Constants from "expo-constants";
 
 export default function Settings() {
     const navigation = useNavigation()
@@ -125,7 +126,9 @@ export default function Settings() {
 
                 {/* App Version */}
                 <View className="items-center mt-8">
-                    <Text className="text-gray-500">Version 1.0.0</Text>
+                    <Text className="text-gray-500">
+                         Version {Constants.systemVersion ?? "Unknown"}
+                    </Text>
                 </View>
             </View>
         </SafeWrapper>

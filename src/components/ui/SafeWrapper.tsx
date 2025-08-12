@@ -19,7 +19,7 @@ export default function SafeWrapper({
 
     return (
         <LinearGradient
-            colors={['#F9FAFB', '#EDE9FE']} className="flex-1"
+            colors={['#fff', '#EDE9FE']} className="flex-1"
         >
             <StatusBar style={statusBarStyle} />
             <WrapperComponent
