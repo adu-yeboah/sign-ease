@@ -86,7 +86,6 @@ const DisplayQuiz = () => {
     };
 
     const handleLiveQuizPress = () => {
-        // Show message that live quiz is coming soon
         alert('Live Quiz feature is coming soon!');
     };
 

@@ -1,61 +1,70 @@
 import React, { useState } from 'react';
-import { View, Text, FlatList, TouchableOpacity } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
+import { View, Text, FlatList, TouchableOpacity, ScrollView } from 'react-native';
+import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
 import * as Animatable from 'react-native-animatable';
 import ProgressCard from '../components/ProgressCard';
 import SafeWrapper from '../components/ui/SafeWrapper';
 import { useSign } from '@/hooks/useSign';
-
-type CategoryType = 'all' | 'alphabet' | 'simple' | 'advanced';
+import { SignCategory } from '@/types/sign';
 
 const ProgressScreen = () => {
-    const [activeCategory, setActiveCategory] = useState<CategoryType>('all');
-    const { alphabet, allSigns, simple } = useSign()
-    const progressSigns = allSigns
+    const { signs, progress, loading } = useSign();
+    const [activeCategory, setActiveCategory] = useState<SignCategory | 'all'>('all');
 
-    
     // Filter signs based on active category
-    const filteredSigns = () => {
-        switch (activeCategory) {
-            case "all":
-                return allSigns
-            case "alphabet":
-                return alphabet;
-            case "advanced":
-                return simple; 
-            case "simple":
-                return simple;
-            default:
-                return [];
-        }
-    };
+    const filteredSigns = activeCategory === 'all'
+        ? signs
+        : signs.filter(sign => sign.category === activeCategory);
 
-    const learnedCount = filteredSigns().filter(sign => sign.learned).length;
+    // Calculate progress for current filter
+    const learnedCount = filteredSigns.filter(sign => sign.learned).length;
     const totalCount = filteredSigns.length;
     const progressPercentage = totalCount > 0 ? (learnedCount / totalCount) * 100 : 0;
 
-    const categories = {
-        alphabet: progressSigns.filter(sign => sign.category === 'alphabet'),
-        simple: progressSigns.filter(sign => sign.category === 'simple'),
-        advanced: progressSigns.filter(sign => sign.category === 'advanced'),
-    };
+    const CATEGORIES: {
+        id: SignCategory | 'all';
+        name: string;
+        icon: keyof typeof Ionicons.glyphMap;
+        color: string;
+    }[] = [
+            { id: 'all', name: 'All', icon: 'list', color: '#8B5CF6' },
+            { id: 'alphabet', name: 'ABCs', icon: 'calculator', color: '#8B5CF6' },
+            { id: 'numbers', name: 'Numbers', icon: 'calculator', color: '#3B82F6' },
+            { id: 'greetings', name: 'Greetings', icon: 'hand-left', color: '#F59E0B' },
+            { id: 'food', name: 'Food', icon: 'fast-food', color: '#EF4444' },
+            { id: 'simple', name: 'Simple', icon: 'color-palette', color: '#EC4899' },
+            { id: 'actions', name: 'Actions', icon: 'walk', color: '#10B981' },
+        ];
 
-    const getCategoryColor = (category: string) => {
+    const getCategoryColor = (category: SignCategory) => {
         switch (category) {
             case 'alphabet': return 'bg-accent-500';
-            case 'simple': return 'bg-primary-500';
-            case 'advanced': return 'bg-secondary-500';
+            case 'numbers': return 'bg-blue-500';
+            case 'greetings': return 'bg-yellow-500';
+            case 'food': return 'bg-red-500';
+            case 'simple': return 'bg-pink-500';
+            case 'actions': return 'bg-green-500';
             default: return 'bg-accent-500';
         }
     };
 
-    const getActiveCategoryColor = (category: CategoryType) => {
-        return activeCategory === category ? 'bg-accent-500' : 'bg-gray-100';
+    const getActiveCategoryColor = (category: SignCategory | 'all') => {
+        return activeCategory === category ? getCategoryColor(category as SignCategory) : 'bg-gray-100';
     };
 
-    const getActiveTextColor = (category: CategoryType) => {
+    const getActiveTextColor = (category: SignCategory | 'all') => {
         return activeCategory === category ? 'text-white' : 'text-gray-700';
     };
+
+    if (loading) {
+        return (
+            <SafeWrapper>
+                <View className="flex-1 items-center justify-center">
+                    <Text>Loading progress...</Text>
+                </View>
+            </SafeWrapper>
+        );
+    }
 
     return (
         <SafeWrapper>
@@ -67,25 +76,48 @@ const ProgressScreen = () => {
                         Your Progress
                     </Text>
                 </View>
-                <View className="w-6" />
             </View>
 
-            {/* Category Tabs */}
-            <View className="px-6 mb-4">
-                <View className="flex-row justify-between">
-                    {(['all', 'alphabet', 'simple', 'advanced'] as CategoryType[]).map((category) => (
+            {/* Category Tabs - Horizontal Scroll */}
+            <ScrollView
+                horizontal
+                showsHorizontalScrollIndicator={false}
+                className="px-6 py-1 max-h-20 mb-4"
+                contentContainerStyle={{ paddingRight: 24 }}
+            >
+                <View className="flex-row gap-2">
+                    {CATEGORIES.map((category) => (
                         <TouchableOpacity
-                            key={category}
-                            className={`py-2 px-4 rounded-lg ${getActiveCategoryColor(category)}`}
-                            onPress={() => setActiveCategory(category)}
+                            key={category.id}
+                            className={`py-2 px-4 h-8 rounded-lg ${getActiveCategoryColor(category.id)}`}
+                            onPress={() => setActiveCategory(category.id)}
                         >
-                            <Text className={`text-sm font-medium capitalize ${getActiveTextColor(category)}`}>
-                                {category === 'all' ? 'All' : category}
-                            </Text>
+                            <View className="flex-row items-center">
+                                {
+                                    category.id == "alphabet" ?
+                                        (
+                                            <MaterialCommunityIcons
+                                                name="alphabetical"
+                                                size={24}
+                                                color={activeCategory === category.id ? 'white' : category.color}
+                                                className="mr-1"
+                                            />
+                                        ) : (
+                                            <Ionicons
+                                                name={category.icon}
+                                                size={16}
+                                                color={activeCategory === category.id ? 'white' : category.color}
+                                                className="mr-1"
+                                            />)
+                                }
+                                <Text className={`text-sm font-medium capitalize ${getActiveTextColor(category.id)}`}>
+                                    {category.name}
+                                </Text>
+                            </View>
                         </TouchableOpacity>
                     ))}
                 </View>
-            </View>
+            </ScrollView>
 
             <View className="px-6">
                 {/* Progress Summary */}
@@ -119,42 +151,12 @@ const ProgressScreen = () => {
                     </Text>
                 </Animatable.View>
 
-                {/* Category Progress */}
-                {activeCategory === 'all' && (
-                    <Animatable.View
-                        animation="fadeInUp"
-                        duration={800}
-                        className="flex-row justify-between mb-6"
-                    >
-                        {Object.entries(categories).map(([category, signs]) => {
-                            const learned = signs.filter(s => s.learned).length;
-                            const total = signs.length;
-                            const percent = total > 0 ? (learned / total) * 100 : 0;
 
-                            return (
-                                <TouchableOpacity
-                                    key={category}
-                                    className="items-center flex-1"
-                                    onPress={() => setActiveCategory(category as CategoryType)}
-                                >
-                                    <View className={`${getCategoryColor(category)} w-12 h-12 rounded-xl items-center justify-center mb-2`}>
-                                        <Text className="text-white font-bold">
-                                            {percent.toFixed(0)}%
-                                        </Text>
-                                    </View>
-                                    <Text className="text-xs text-center text-accent-700 capitalize">
-                                        {category}
-                                    </Text>
-                                </TouchableOpacity>
-                            );
-                        })}
-                    </Animatable.View>
-                )}
             </View>
 
             {/* Signs List */}
             <FlatList
-                data={filteredSigns()}
+                data={filteredSigns}
                 keyExtractor={(item) => item.id}
                 renderItem={({ item }) => (
                     <Animatable.View
@@ -164,9 +166,16 @@ const ProgressScreen = () => {
                         <ProgressCard sign={item} />
                     </Animatable.View>
                 )}
+                ListEmptyComponent={
+                    <View className="items-center justify-center py-10">
+                        <Text className="text-gray-500">No signs found in this category</Text>
+                    </View>
+                }
+                className='flex-1'
                 contentContainerStyle={{
                     paddingHorizontal: 20,
-                    paddingBottom: 40
+                    paddingBottom: 40,
+                    flexGrow: 1
                 }}
                 showsVerticalScrollIndicator={false}
             />

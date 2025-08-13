@@ -1,4 +1,4 @@
-import React, { useCallback, useState, } from "react";
+import React, { useCallback, useState, useMemo } from "react";
 import { View, Text, TouchableOpacity, Dimensions, Image } from "react-native";
 import { VideoView, useVideoPlayer } from "expo-video";
 import Carousel from "react-native-reanimated-carousel";
@@ -23,28 +23,27 @@ const SignDetailScreen = () => {
   const navigation = useNavigation<SignDetailNavigationProp>();
   const { signId } = route.params;
   const { signs, markAsLearned } = useSign();
+  
+  const sign = useMemo(() => signs.find((s) => s.id === signId), [signs, signId]);
+  const [isPlaying, setIsPlaying] = useState(true);
+  const [currentMediaIndex, setCurrentMediaIndex] = useState(0);
+
+  const safeMedia = useMemo(() => sign?.media || [], [sign]);
+  const hasMedia = safeMedia.length > 0;
 
   
-  const sign = signs.find((s) => s.id === signId);
-  const [isPlaying, setIsPlaying] = useState(true);
-
   const getCategoryColor = () => {
     if (!sign) return "bg-accent-500";
     switch (sign.category) {
-      case "alphabet":
-        return "bg-purple-500";
-      case "numbers":
-        return "bg-blue-500";
-      case "animals":
-        return "bg-green-500";
-      case "food":
-        return "bg-red-500";
-      case "greetings":
-        return "bg-yellow-500";
-      case "family":
-        return "bg-pink-500";
-      default:
-        return "bg-accent-500";
+      case "alphabet": return "bg-purple-500";
+      case "numbers": return "bg-blue-500";
+      case "animals": return "bg-green-500";
+      case "food": return "bg-red-500";
+      case "greetings": return "bg-yellow-500";
+      case "family": return "bg-pink-500";
+      case "simple": return "bg-orange-500";
+      case "actions": return "bg-cyan-500";
+      default: return "bg-accent-500";
     }
   };
 
@@ -56,23 +55,34 @@ const SignDetailScreen = () => {
   }, [sign]);
 
   const handleLearned = async () => {
+
     if (sign) {
       await markAsLearned(sign.id, sign.category);
       navigation.goBack();
     }
   };
 
-  const renderMediaItem = ({ item }: { item: SignMedia }) => {
+  const renderMediaItem = ({ item, index }: { item: SignMedia; index: number }) => {
     if (item.type === "video") {
       const player = useVideoPlayer(item.uri, (p) => {
         p.loop = true;
-        p.play();
+        if (index === currentMediaIndex) {
+          p.play();
+        } else {
+          p.pause();
+        }
       });
+
       return (
-        <View className="relative w-full h-72">
+        <View className="relative w-full h-72 items-center justify-center">
           <VideoView
             player={player}
-            style={{ width: "100%", height: "100%", borderRadius: 16 }}
+            style={{ 
+              width: "100%", 
+              height: "100%", 
+              borderRadius: 16,
+              backgroundColor: '#00000020'
+            }}
             contentFit="contain"
           />
           <TouchableOpacity
@@ -96,11 +106,18 @@ const SignDetailScreen = () => {
       );
     } else {
       return (
-        <Image
-          source={item.uri}
-          style={{ width: "100%", height: 280, borderRadius: 16 }}
-          resizeMode="contain"
-        />
+        <View className="flex-1 items-center justify-center">
+          <Image
+            source={item.uri}
+            style={{ 
+              width: "100%", 
+              height: 280, 
+              borderRadius: 16,
+              maxWidth: 300
+            }}
+            resizeMode="contain"
+          />
+        </View>
       );
     }
   };
@@ -143,20 +160,22 @@ const SignDetailScreen = () => {
               {sign.category.charAt(0).toUpperCase() + sign.category.slice(1)}
             </Text>
 
-            <View className="bg-white/20 rounded-xl w-full h-72">
-              {sign.media.length > 0 ? (
+            <View className="bg-white/20 rounded-xl w-full h-72 items-center justify-center">
+              {hasMedia ? (
                 <Carousel
                   loop
                   width={screenWidth - 80}
                   height={288}
-                  data={sign.media}
+                  data={safeMedia}
                   renderItem={renderMediaItem}
                   autoPlay={false}
                   scrollAnimationDuration={500}
+                  onSnapToItem={setCurrentMediaIndex}
                 />
               ) : (
                 <View className="flex-1 items-center justify-center">
                   <Ionicons name="warning" size={40} color="white" />
+                  <Text className="text-white mt-2">No media available</Text>
                 </View>
               )}
             </View>
@@ -174,7 +193,7 @@ const SignDetailScreen = () => {
             About This Sign
           </Text>
           <Text className="text-gray-600 text-base leading-6">
-            {sign.description}
+            {sign.description || "No description available."}
           </Text>
         </Animatable.View>
 
@@ -183,7 +202,7 @@ const SignDetailScreen = () => {
           animation="fadeInUp"
           duration={800}
           delay={400}
-          className="flex-row space-x-4"
+          className="flex-row gap-4"
         >
           <TouchableOpacity
             className="flex-1 bg-purple-500 py-3 rounded-xl items-center"

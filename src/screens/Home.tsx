@@ -1,7 +1,7 @@
 import React from 'react';
 import { View, Text, TouchableOpacity, ScrollView, Image } from 'react-native';
 import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
-import { ProgressByCategory, SignCategory } from '@/types/sign';
+import { SignCategory } from '@/types/sign';
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RootStackParamList } from '@/types/utils';
@@ -82,7 +82,7 @@ const HomeScreen = () => {
             )}
           </View>
           <View className="h-2 bg-gray-100 rounded-full">
-            <View className="h-full rounded-full bg-purple-500" style={{ width: '16%' }} />
+            <View className="h-full rounded-full bg-purple-500" style={{ width: progress ? (progress.alphabet?.learned / progress.alphabet?.total) * 100 : 0 }} />
           </View>
         </View>
 

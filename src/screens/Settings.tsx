@@ -4,14 +4,16 @@ import SafeWrapper from '../components/ui/SafeWrapper'
 import { Ionicons } from '@expo/vector-icons'
 import { useNavigation } from '@react-navigation/native'
 import Constants from "expo-constants";
+import { useSign } from '@/hooks/useSign'
 
 export default function Settings() {
     const navigation = useNavigation()
     const [notificationsEnabled, setNotificationsEnabled] = useState(true)
     const [showClearConfirm, setShowClearConfirm] = useState(false)
+    const { clearData } = useSign()
 
     const clearProgress = () => {
-        console.log('Progress cleared!')
+        clearData()
         setShowClearConfirm(false)
     }
 
@@ -65,7 +67,7 @@ export default function Settings() {
                         onPress={() => setShowClearConfirm(true)}
                     >
                         <View className="flex-row items-center">
-                            <Ionicons name="trash-outline" size={20} color="#6B7280" className="mr-3" />
+                            <Ionicons name="trash-outline" size={20} color="red" className="mr-3" />
                             <Text className="text-text">Clear All Progress</Text>
                         </View>
                         <Ionicons name="chevron-forward" size={20} color="#6B7280" />
@@ -74,12 +76,12 @@ export default function Settings() {
                     {showClearConfirm && (
                         <View className="mt-4 bg-white rounded-xl p-4 shadow-sm">
                             <Text className="text-text mb-4">Are you sure you want to clear all your progress? This cannot be undone.</Text>
-                            <View className="flex-row justify-end space-x-3">
+                            <View className="flex-row justify-end gap-2">
                                 <TouchableOpacity onPress={() => setShowClearConfirm(false)}>
                                     <Text className="text-accent-700 font-medium">Cancel</Text>
                                 </TouchableOpacity>
                                 <TouchableOpacity onPress={clearProgress}>
-                                    <Text className="text-danger-500 font-medium">Clear</Text>
+                                    <Text className="text-red-600 font-medium">Clear</Text>
                                 </TouchableOpacity>
                             </View>
                         </View>

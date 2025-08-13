@@ -8,6 +8,20 @@ export const useSign = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
+    // Mark a sign as learned
+  const markAsLearned = async (id: string, category: string) => {
+    try {
+      const updatedSigns = await signService.updateSign(id, { learned: true });
+      const updatedProgress = await signService.getProgressByCategory();
+      setSigns(updatedSigns);
+      setProgress(updatedProgress);
+    } catch (err) {
+      setError("Failed to update sign");
+      console.error(err);
+    }
+  };
+
+  
   // Load all signs and progress on mount
   useEffect(() => {
     const loadData = async () => {
@@ -26,25 +40,24 @@ export const useSign = () => {
       }
     };
     loadData();
-  }, []);
+  }, [markAsLearned]);
 
-  // Mark a sign as learned
-  const markAsLearned = async (id: string, category: string) => {
-    try {
-      const updatedSigns = await signService.updateSign(id, { learned: true });
-      const updatedProgress = await signService.getProgressByCategory();
-      setSigns(updatedSigns);
-      setProgress(updatedProgress);
-    } catch (err) {
-      setError("Failed to update sign");
-      console.error(err);
-    }
-  };
+
 
   // Get signs by category
   const getSignsByCategory = (category: SignCategory) => {
     return signs.filter(sign => sign.category === category);
   };
+
+
+  // clear all data
+  const clearData = async () => {
+    try {
+      await signService.clearAllData()
+    } catch (error) {
+      console.log("clearing data error", error);
+    }
+  }
 
   return {
     signs,
@@ -53,5 +66,6 @@ export const useSign = () => {
     error,
     markAsLearned,
     getSignsByCategory,
+    clearData,
   };
 };
