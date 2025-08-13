@@ -6,6 +6,8 @@ import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RootStackParamList } from '@/types/utils';
 import SafeWrapper from '@/components/ui/SafeWrapper';
+import AnimatedButton from '@/components/Button';
+import { useSign } from '@/hooks/useSign';
 
 type HomeScreenNavigationProp = NativeStackNavigationProp<RootStackParamList, 'Home'>;
 
@@ -15,21 +17,30 @@ const CATEGORIES: {
   icon: keyof typeof Ionicons.glyphMap;
   color: string;
 }[] = [
-  { id: 'alphabet', name: 'ABCs', icon: 'people-outline', color: '#8B5CF6' },
-  { id: 'numbers', name: 'Numbers', icon: 'calculator-outline', color: '#3B82F6' },
-  { id: 'animals', name: 'Animals', icon: 'paw-outline', color: '#10B981' },
-  { id: 'food', name: 'Food', icon: 'fast-food-outline', color: '#EF4444' },
-  { id: 'greetings', name: 'Greetings', icon: 'hand-left-outline', color: '#F59E0B' },
-  { id: 'family', name: 'Family', icon: 'people-outline', color: '#EC4899' },
-];
+    { id: 'alphabet', name: 'ABCs', icon: 'people-outline', color: '#8B5CF6' },
+    { id: 'numbers', name: 'Numbers', icon: 'calculator-outline', color: '#3B82F6' },
+    { id: 'animals', name: 'Animals', icon: 'paw-outline', color: '#10B981' },
+    { id: 'food', name: 'Food', icon: 'fast-food-outline', color: '#EF4444' },
+    { id: 'greetings', name: 'Greetings', icon: 'hand-left-outline', color: '#F59E0B' },
+    { id: 'family', name: 'Family', icon: 'people-outline', color: '#EC4899' },
+    {
+      id: 'simple',
+      name: "Simple",
+      icon: 'color-palette-outline',
+      color: '#EC4899',
+    },
+    {
+      id: 'actions',
+      name: "Actions",
+      icon: 'walk-outline',
+      color: '#8B5CF6'
+    },
+  ];
 
 const HomeScreen = () => {
   const navigation = useNavigation<HomeScreenNavigationProp>();
-
-  const progress: ProgressByCategory = {
-    alphabet: { learned: 5, total: 26 },
-    animals: { learned: 3, total: 12 },
-  };
+  const { progress } = useSign()
+  
 
   return (
     <SafeWrapper>
@@ -39,8 +50,8 @@ const HomeScreen = () => {
           source={require('@assets/images/utils/logo.png')}
           className="h-12 w-48"
         />
-        <TouchableOpacity 
-        // onPress={() => navigation.navigate('ParentMode')}
+        <TouchableOpacity
+          onPress={() => navigation.navigate('Settings')}
         >
           <Ionicons name="settings-outline" size={24} color="#6B7280" />
         </TouchableOpacity>
@@ -66,35 +77,39 @@ const HomeScreen = () => {
           </Text>
           <View className="flex-row items-center mb-2">
             <Text className="text-gray-600">Total signs learned: </Text>
-            <Text className="font-bold text-purple-600">8/50</Text>
+            {progress && (
+              <Text className="font-bold text-purple-600">You know {progress.alphabet?.learned}/{progress.alphabet?.total} letters!</Text>
+            )}
           </View>
           <View className="h-2 bg-gray-100 rounded-full">
             <View className="h-full rounded-full bg-purple-500" style={{ width: '16%' }} />
           </View>
         </View>
 
+
+
         {/* Category Grid */}
         <Text className="text-xl font-bold text-gray-800 mb-4">Learn Signs</Text>
         <View className="flex-row flex-wrap justify-between">
           {CATEGORIES.map((category) => {
-            const categoryProgress = progress[category.id];
+            const categoryProgress = progress && progress[category.id];
             return (
               <TouchableOpacity
                 key={category.id}
                 className="w-[48%] mb-4 p-4 rounded-xl items-center"
-                style={{ backgroundColor: `${category.color}20` }} 
-                // onPress={() =>
-                //   // navigation.navigate('Category', { category: category.id })
-                // }
+                style={{ backgroundColor: `${category.color}20` }}
+                onPress={() =>
+                  navigation.navigate('Category', { category: category.id })
+                }
               >
                 <View
                   className="p-3 rounded-full mb-2"
                   style={{ backgroundColor: category.color }}
                 >
                   {
-                    category.id == "alphabet" ?  <MaterialCommunityIcons name="alphabetical" size={24} color="white" /> :  <Ionicons name={category.icon} size={24} color="white" />
+                    category.id == "alphabet" ? <MaterialCommunityIcons name="alphabetical" size={24} color="white" /> : <Ionicons name={category.icon} size={24} color="white" />
                   }
-                 
+
                 </View>
                 <Text className="font-bold text-gray-800">{category.name}</Text>
                 {categoryProgress && (
@@ -106,7 +121,24 @@ const HomeScreen = () => {
             );
           })}
         </View>
+
+        {/* Quiz Display */}
+        <View className="pt-6">
+          <AnimatedButton
+            title="Take a Quiz"
+            description="Test your knowledge"
+            onPress={() => navigation.navigate('QuizDisplay')}
+            animation="pulse"
+            duration={1600}
+            iterationCount="infinite"
+            className="w-full bg-warning-500"
+            icon="help-circle-outline"
+          />
+        </View>
+
+
       </ScrollView>
+
     </SafeWrapper>
   );
 };

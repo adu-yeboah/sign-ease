@@ -29,7 +29,7 @@ export const useSign = () => {
   }, []);
 
   // Mark a sign as learned
-  const markAsLearned = async (id: string) => {
+  const markAsLearned = async (id: string, category: string) => {
     try {
       const updatedSigns = await signService.updateSign(id, { learned: true });
       const updatedProgress = await signService.getProgressByCategory();

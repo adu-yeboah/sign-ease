@@ -1,47 +1,70 @@
+// screens/quiz/QuizScreen.tsx
 import React, { useState } from 'react';
 import { View, Text, TouchableOpacity, Image } from 'react-native';
-import * as Animatable from 'react-native-animatable';
 import { useRoute, useNavigation } from '@react-navigation/native';
-import { LinearGradient } from 'expo-linear-gradient';
+import { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import { RootStackParamList } from '@/types/utils';
+import SafeWrapper from '@/components/ui/SafeWrapper';
+import { VideoView, useVideoPlayer } from 'expo-video';
 import { Ionicons } from '@expo/vector-icons';
-import { QuizQuestion } from '../../types/utils';
-import signsData from "../../data/sign.json";
-import AnimatedButton from '../../components/Button';
-import SafeWrapper from '../../components/ui/SafeWrapper';
-import { AlphabetQuiz } from '@/data/quiz/alphabet';
-import { SimpleWordsQuiz } from '@/data/quiz/simplewords';
-import { AdvanceQuiz } from '@/data/quiz/advance';
+import * as Animatable from 'react-native-animatable';
+import { useQuiz } from '@/hooks/useQuiz';
+import { QuizCategory, QuizDifficulty } from '@/types/quiz';
 
+type QuizScreenNavigationProp = NativeStackNavigationProp<
+  RootStackParamList,
+  'Quiz'
+>;
 
 const QuizScreen = () => {
-  const route = useRoute<any>();
-  const navigation = useNavigation();
-  const { categoryType } = route.params;
+  const route = useRoute();
+  const navigation = useNavigation<QuizScreenNavigationProp>();
+  const { category, difficulty } = route.params as {
+    category: QuizCategory;
+    difficulty?: QuizDifficulty;
+  };
 
-   const initialQuestions = React.useMemo(() => {
-    switch (categoryType) {
-      case 'alphabet': return AlphabetQuiz;
-      case 'simple': return SimpleWordsQuiz;
-      case 'advanced': return AdvanceQuiz;
-      default: return [];
-    }
-  }, [categoryType]);
-
-  const [questions, setQuestions] = useState<QuizQuestion[]>(initialQuestions);
-  const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
+  const { questions, loading } = useQuiz(category, difficulty);
+  const [currentIndex, setCurrentIndex] = useState(0);
   const [selectedAnswer, setSelectedAnswer] = useState<string | null>(null);
   const [score, setScore] = useState(0);
   const [quizCompleted, setQuizCompleted] = useState(false);
 
-  
-  const currentQuestion = questions[currentQuestionIndex];
+  const currentQuestion = questions[currentIndex];
 
-  const getCategoryColor = (category: string) => {
+  const getCategoryColor = () => {
     switch (category) {
-      case 'alphabet': return 'bg-accent-500';
-      case 'simple': return 'bg-primary-500';
-      case 'advanced': return 'bg-secondary-500';
-      default: return 'bg-accent-500';
+      case 'alphabet':
+        return 'bg-purple-500';
+      case 'numbers':
+        return 'bg-blue-500';
+      case 'greetings':
+        return 'bg-green-500';
+      case 'animals':
+        return 'bg-yellow-500';
+      case 'food':
+        return 'bg-red-500';
+      case 'family':
+        return 'bg-pink-500';
+      case 'simple':
+        return 'bg-indigo-500';
+      case 'actions':
+        return 'bg-orange-500';
+      default:
+        return 'bg-purple-500';
+    }
+  };
+
+  const getDifficultyColor = () => {
+    switch (difficulty) {
+      case 'easy':
+        return 'bg-green-500';
+      case 'medium':
+        return 'bg-yellow-500';
+      case 'hard':
+        return 'bg-red-500';
+      default:
+        return 'bg-gray-500';
     }
   };
 
@@ -51,13 +74,9 @@ const QuizScreen = () => {
       setScore(score + 1);
     }
 
-    // Move to next question or end quiz
     setTimeout(() => {
-      console.log("currentID", currentQuestionIndex);
-      console.log("question", questions.length);
-
-      if (currentQuestionIndex < questions.length - 1) {
-        setCurrentQuestionIndex(currentQuestionIndex + 1);
+      if (currentIndex < questions.length - 1) {
+        setCurrentIndex(currentIndex + 1);
         setSelectedAnswer(null);
       } else {
         setQuizCompleted(true);
@@ -65,34 +84,69 @@ const QuizScreen = () => {
     }, 1000);
   };
 
+  const getMediaSource = (uri: any) => {
+    if (typeof uri === 'string') {
+      return uri; 
+    }
+    return uri; 
+  };
+
+  if (loading) {
+    return (
+      <SafeWrapper>
+        <View className="flex-1 items-center justify-center">
+          <Text>Loading quiz...</Text>
+        </View>
+      </SafeWrapper>
+    );
+  }
+
   if (quizCompleted) {
     return (
       <SafeWrapper>
-        <View className="flex-1 items-center justify-center px-6">
+        <View className="flex-1 items-center justify-center p-6">
           <Animatable.View
             animation="bounceIn"
-            duration={1000}
-            className={`${getCategoryColor(categoryType)} rounded-2xl p-8 w-full items-center`}
+            className={`${getCategoryColor()} rounded-2xl p-8 w-full items-center`}
           >
-            <Text className="text-3xl font-bold text-white font-display mb-4">
+            <Text className="text-2xl font-bold text-white mb-4">
               Quiz Complete!
             </Text>
+
+            {difficulty && (
+              <View
+                className={`${getDifficultyColor()} px-3 py-1 rounded-full mb-3`}
+              >
+                <Text className="text-white text-sm font-bold">
+                  {difficulty.toUpperCase()}
+                </Text>
+              </View>
+            )}
+
             <View className="bg-white/20 rounded-full px-6 py-4 mb-6">
-              <Text className="text-white text-2xl font-bold">
-                {score} / {questions.length}
+              <Text className="text-white text-xl font-bold">
+                {score}/{questions.length} Correct
               </Text>
             </View>
-            <Text className="text-white text-lg text-center mb-6">
-              {score === questions.length ? "🌟 Perfect score! Amazing!" :
-                score >= questions.length / 2 ? "👍 Good job! Keep practicing!" :
-                  "Keep practicing! You'll get better!"}
+
+            <Text className="text-white text-center mb-6">
+              {score === questions.length
+                ? 'Perfect! 🎉'
+                : score >= questions.length * 0.7
+                ? 'Great job! 👍'
+                : 'Keep practicing! 💪'}
             </Text>
-            <AnimatedButton
-              title="Back to Learning"
+
+            <TouchableOpacity
               onPress={() => navigation.goBack()}
-              className="w-full bg-accent-400"
-              icon="arrow-back"
-            />
+              className="bg-white rounded-xl py-3 px-6 w-full items-center"
+            >
+              <Text
+                className={`${getCategoryColor().replace('bg', 'text')} font-bold`}
+              >
+                Finish
+              </Text>
+            </TouchableOpacity>
           </Animatable.View>
         </View>
       </SafeWrapper>
@@ -102,93 +156,118 @@ const QuizScreen = () => {
   if (!currentQuestion) {
     return (
       <SafeWrapper>
-        <View className="flex-1 items-center justify-center px-6">
-          <Text className="text-accent-700 font-display text-lg">
-            No quiz questions available for this sign.
-          </Text>
-          <AnimatedButton
-            title="Back to Learning"
+        <View className="flex-1 items-center justify-center">
+          <Text>No questions available for this category</Text>
+          <TouchableOpacity
             onPress={() => navigation.goBack()}
-            className="w-full mt-6 bg-accent-500"
-            icon="arrow-back"
-          />
+            className="mt-4 bg-purple-500 px-4 py-2 rounded-lg"
+          >
+            <Text className="text-white">Back to Categories</Text>
+          </TouchableOpacity>
         </View>
       </SafeWrapper>
     );
   }
 
+  // Set up video player only when media is video
+  const player =
+    currentQuestion?.media?.type === 'video'
+      ? useVideoPlayer(getMediaSource(currentQuestion.media.uri), (p) => {
+          p.loop = true;
+          p.play();
+        })
+      : null;
+
   return (
     <SafeWrapper>
-      {/* Header */}
-      <View className="flex-row justify-between items-center px-6 pt-4 pb-4">
-        <TouchableOpacity onPress={() => navigation.goBack()}>
-          <Ionicons name="arrow-back" size={24} color="#8B5CF6" />
-        </TouchableOpacity>
-        <Text className="text-xl font-bold text-accent-700 font-display">
-          Quiz
-        </Text>
-        <View className="w-6" />
-      </View>
+      <View className="flex-1 p-6">
+        {/* Header */}
+        <View className="flex-row justify-between items-center mb-4">
+          <TouchableOpacity onPress={() => navigation.goBack()}>
+            <Ionicons name="arrow-back" size={24} color="#8B5CF6" />
+          </TouchableOpacity>
 
-      <View className="flex-1 px-6">
-        {/* Progress Indicator */}
-        <View className="flex-row justify-between items-center mb-6">
-          <Text className="text-accent-500 font-medium">
-            Question {currentQuestionIndex + 1}/{questions.length}
-          </Text>
-          <View className="bg-accent-100 rounded-full h-2 flex-1 mx-3">
-            <View
-              className={`${getCategoryColor(categoryType)} h-2 rounded-full`}
-              style={{ width: `${((currentQuestionIndex + 1) / questions.length) * 100}%` }}
-            />
-          </View>
-          <Text className="text-accent-500 font-medium">
-            {score} pts
-          </Text>
+          {difficulty && (
+            <View className={`${getDifficultyColor()} px-3 py-1 rounded-full`}>
+              <Text className="text-white text-sm font-bold">
+                {difficulty.toUpperCase()}
+              </Text>
+            </View>
+          )}
+
+          <View className="w-6" />
         </View>
 
-        {/* Question Card */}
+        {/* Progress */}
+        <View className="mb-6">
+          <Text className="text-lg font-semibold text-gray-700 mb-1">
+            Question {currentIndex + 1}/{questions.length}
+          </Text>
+          <View className="h-2 bg-gray-200 rounded-full">
+            <View
+              className={`h-full rounded-full ${getCategoryColor()}`}
+              style={{
+                width: `${((currentIndex + 1) / questions.length) * 100}%`,
+              }}
+            />
+          </View>
+        </View>
+
+        {/* Question */}
         <Animatable.View
           animation="fadeInUp"
-          duration={600}
-          className={`${getCategoryColor(categoryType)} rounded-2xl p-6 mb-6`}
+          className={`${getCategoryColor()} rounded-2xl p-6 mb-6`}
         >
-          <Text className="text-white text-xl font-display font-bold mb-4 text-center">
+          <Text className="text-white text-xl font-bold mb-4 text-center">
             {currentQuestion.question}
           </Text>
 
-          {currentQuestion.image && (
-            <View className="bg-white/20 rounded-xl p-4 mb-4 items-center">
-              <Image
-                source={currentQuestion.image}
-                className="w-40 h-40"
-                resizeMode="contain"
-              />
+          {currentQuestion.media && (
+            <View className="bg-white/20 rounded-xl p-4 items-center justify-center mb-4">
+              {currentQuestion.media.type === 'video' && player ? (
+                <VideoView
+                  player={player}
+                  style={{ width: '100%', height: 160 }}
+                  contentFit="contain"
+                  allowsFullscreen
+                  allowsPictureInPicture
+                />
+              ) : (
+                <Image
+                  source={getMediaSource(currentQuestion.media.uri)}
+                  className="w-40 h-40"
+                  resizeMode="contain"
+                />
+              )}
             </View>
           )}
         </Animatable.View>
 
-        {/* Answer Options */}
-        <View className="mb-6">
+        {/* Options */}
+        <View className="gap-2">
           {currentQuestion.options.map((option, index) => (
             <Animatable.View
               key={index}
               animation="fadeInUp"
-              duration={800}
+              duration={2000}
               delay={index * 100}
             >
               <TouchableOpacity
-                className={`p-4 rounded-xl mb-3 ${selectedAnswer === option
-                  ? option === currentQuestion.correctAnswer
-                    ? 'bg-secondary-500'
-                    : 'bg-red-400'
-                  : 'bg-white'
-                  } shadow-sm`}
+                className={`p-4 rounded-xl ${
+                  selectedAnswer === option
+                    ? option === currentQuestion.correctAnswer
+                      ? 'bg-green-500'
+                      : 'bg-red-500'
+                    : 'bg-gray-100'
+                }`}
                 onPress={() => !selectedAnswer && handleAnswer(option)}
                 disabled={!!selectedAnswer}
               >
-                <Text className={`text-lg text-center font-medium ${selectedAnswer === option ? 'text-white' : 'text-text'
-                  }`}>
+                <Text
+                  className={`text-center ${
+                    selectedAnswer === option ? 'text-white' : 'text-gray-800'
+                  }`}
+                >
                   {option}
                 </Text>
               </TouchableOpacity>
@@ -196,22 +275,14 @@ const QuizScreen = () => {
           ))}
         </View>
 
-        {/* Feedback */}
-        {selectedAnswer && (
+        {/* Explanation */}
+        {selectedAnswer && currentQuestion.explanation && (
           <Animatable.View
             animation="fadeInUp"
-            className={`p-4 rounded-xl ${selectedAnswer === currentQuestion.correctAnswer
-              ? 'bg-secondary-100 border border-secondary-300'
-              : 'bg-red-100 border border-red-300'
-              }`}
+            className="bg-blue-50 p-4 rounded-xl mt-4 border border-blue-200"
           >
-            <Text className={`text-center text-lg font-medium ${selectedAnswer === currentQuestion.correctAnswer
-              ? 'text-secondary-700'
-              : 'text-red-700'
-              }`}>
-              {selectedAnswer === currentQuestion.correctAnswer
-                ? "✅ Correct! Well done!"
-                : "❌ Incorrect. The correct answer is: " + currentQuestion.correctAnswer}
+            <Text className="text-blue-800">
+              {currentQuestion.explanation}
             </Text>
           </Animatable.View>
         )}

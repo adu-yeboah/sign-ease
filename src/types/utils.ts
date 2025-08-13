@@ -18,24 +18,19 @@ export type Sign = {
   learned?: boolean;
 };
 
-export type QuizQuestion = {
-  signId: string;
-  question: string;
-  options: string[];
-  correctAnswer: string;
-  image: any
-};
+
 
 export type RootStackParamList = {
   Home: undefined;
   Login: undefined;
   Register: undefined;
+  Category: {category: string};
   SignList: { category: 'alphabet' | 'simple' | 'advanced' };
   SignDetail: { signId: string };
-  Quiz: { categoryType: string };
+  Quiz: { category: string, difficulty: string | undefined };
   QuizDisplay: undefined;
   LiveQuiz:  { category: string };
   DailyChallenge: undefined;
-  Notification: undefined;
+  Settings: undefined;
   SignDetailVideo: { signId: string };
 };

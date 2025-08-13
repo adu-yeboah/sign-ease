@@ -1,7 +1,6 @@
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { RootStackParamList } from '@/types/utils';
 import BottomTabNavigator from './tabNavigation';
-import SignListScreen from '@/screens/SignList';
 import SignDetailScreen from '@/screens/SignDetail';
 import QuizScreen from '@/screens/quizes/QuizScreen';
 import Settings from '@/screens/Settings';
@@ -12,6 +11,7 @@ import LiveQuiz from '@/screens/quizes/LiveQuiz';
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import SignDetailVideoScreen from '@/screens/signDetailVideo';
 import DailyChallenges from '@/screens/quizes/DailyChallenges';
+import CategoryScreen from '@/screens/Category';
 
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
@@ -57,17 +57,17 @@ export default function AppNavigator() {
         component={BottomTabNavigator}
       />
 
-      {/* Category Sign List */}
+{/* Category Sign List */}
+
       <Stack.Screen
-        name="SignList"
-        component={SignListScreen}
+        name="Category"
+        component={CategoryScreen}
         options={({ route }) => ({
           animation: 'slide_from_right',
           gestureEnabled: true,
         })}
       />
 
-      {/* Sign Detail View */}
       <Stack.Screen
         name="SignDetail"
         component={SignDetailScreen}
@@ -78,7 +78,6 @@ export default function AppNavigator() {
         }}
       />
 
-      {/* Sign Detail View */}
       <Stack.Screen
         name="SignDetailVideo"
         component={SignDetailVideoScreen}
@@ -130,7 +129,7 @@ export default function AppNavigator() {
 
       {/* Notification Screen */}
       <Stack.Screen
-        name="Notification"
+        name="Settings"
         component={Settings}
         options={{
           animation: 'slide_from_right',

@@ -1,50 +1,115 @@
-import React from 'react';
-import { View, Text, Image, ScrollView, TouchableOpacity, Dimensions } from 'react-native';
-import Carousel from 'react-native-reanimated-carousel';
-import * as Animatable from 'react-native-animatable';
-import { useRoute, useNavigation } from '@react-navigation/native';
-import { Ionicons } from '@expo/vector-icons';
-import SafeWrapper from '@/components/ui/SafeWrapper';
-import AnimatedButton from '@/components/Button';
-import alphabetData from '@/data/alphabet';
-import { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import { RootStackParamList } from '@/types/utils';
+import React, { useCallback, useState, } from "react";
+import { View, Text, TouchableOpacity, Dimensions, Image } from "react-native";
+import { VideoView, useVideoPlayer } from "expo-video";
+import Carousel from "react-native-reanimated-carousel";
+import * as Animatable from "react-native-animatable";
+import { useRoute, useNavigation } from "@react-navigation/native";
+import { Ionicons } from "@expo/vector-icons";
+import * as Speech from "expo-speech";
+import SafeWrapper from "@/components/ui/SafeWrapper";
+import { NativeStackNavigationProp } from "@react-navigation/native-stack";
+import { RootStackParamList } from "@/types/utils";
+import { useSign } from "@/hooks/useSign";
+import { SignMedia } from "@/types/sign";
 
-const { width: screenWidth } = Dimensions.get('window');
-type SignDetailNavigationProp = NativeStackNavigationProp<RootStackParamList, 'SignDetail'>;
+const { width: screenWidth } = Dimensions.get("window");
+type SignDetailNavigationProp = NativeStackNavigationProp<
+  RootStackParamList,
+  "SignDetail"
+>;
 
 const SignDetailScreen = () => {
   const route = useRoute<any>();
   const navigation = useNavigation<SignDetailNavigationProp>();
   const { signId } = route.params;
+  const { signs, markAsLearned } = useSign();
 
-  const sign = alphabetData.find((s: any) => s.id === signId);
+  
+  const sign = signs.find((s) => s.id === signId);
+  const [isPlaying, setIsPlaying] = useState(true);
 
   const getCategoryColor = () => {
-    if (!sign) return 'bg-accent-500';
+    if (!sign) return "bg-accent-500";
     switch (sign.category) {
-      case 'alphabet': return 'bg-accent-500';
-      case 'simple': return 'bg-primary-500';
-      case 'advanced': return 'bg-secondary-500';
-      default: return 'bg-accent-500';
+      case "alphabet":
+        return "bg-purple-500";
+      case "numbers":
+        return "bg-blue-500";
+      case "animals":
+        return "bg-green-500";
+      case "food":
+        return "bg-red-500";
+      case "greetings":
+        return "bg-yellow-500";
+      case "family":
+        return "bg-pink-500";
+      default:
+        return "bg-accent-500";
     }
   };
 
-  const renderCarouselItem = ({ item }: { item: any }) => (
-    <View className="flex-1 items-center justify-center">
-      <Image
-        source={item}
-        className="w-full h-64"
-        resizeMode="contain"
-      />
-    </View>
-  );
+  const speakDescription = useCallback(() => {
+    if (sign?.description) {
+      Speech.stop();
+      Speech.speak(sign.description, { rate: 0.9, pitch: 1.1 });
+    }
+  }, [sign]);
+
+  const handleLearned = async () => {
+    if (sign) {
+      await markAsLearned(sign.id, sign.category);
+      navigation.goBack();
+    }
+  };
+
+  const renderMediaItem = ({ item }: { item: SignMedia }) => {
+    if (item.type === "video") {
+      const player = useVideoPlayer(item.uri, (p) => {
+        p.loop = true;
+        p.play();
+      });
+      return (
+        <View className="relative w-full h-72">
+          <VideoView
+            player={player}
+            style={{ width: "100%", height: "100%", borderRadius: 16 }}
+            contentFit="contain"
+          />
+          <TouchableOpacity
+            className="absolute bottom-4 right-4 bg-white/80 rounded-full p-2"
+            onPress={() => {
+              if (isPlaying) {
+                player.pause();
+              } else {
+                player.play();
+              }
+              setIsPlaying(!isPlaying);
+            }}
+          >
+            <Ionicons
+              name={isPlaying ? "pause" : "play"}
+              size={24}
+              color="#8B5CF6"
+            />
+          </TouchableOpacity>
+        </View>
+      );
+    } else {
+      return (
+        <Image
+          source={item.uri}
+          style={{ width: "100%", height: 280, borderRadius: 16 }}
+          resizeMode="contain"
+        />
+      );
+    }
+  };
 
   if (!sign) {
     return (
       <SafeWrapper>
         <View className="flex-1 items-center justify-center">
-          <Text className="text-accent-700 font-display text-lg">Sign not found</Text>
+          <Text className="text-gray-800">Sign not found.</Text>
         </View>
       </SafeWrapper>
     );
@@ -55,85 +120,85 @@ const SignDetailScreen = () => {
       {/* Header */}
       <View className="flex-row justify-between items-center px-6 pt-4 pb-4">
         <TouchableOpacity onPress={() => navigation.goBack()}>
-          <Ionicons name="arrow-back" size={24} color="#8B5CF6" />
+          <Ionicons name="arrow-back" size={26} color="#8B5CF6" />
         </TouchableOpacity>
-        <Text className="text-xl font-bold text-accent-700 font-display">
-          Sign Details
-        </Text>
-        <View className="w-6" />
+        <Text className="text-xl font-bold text-gray-800">Sign Details</Text>
+        <TouchableOpacity onPress={speakDescription}>
+          <Ionicons name="volume-high" size={26} color="#8B5CF6" />
+        </TouchableOpacity>
       </View>
 
-      <ScrollView
-        className="flex-1 px-6"
-        contentContainerStyle={{ paddingBottom: 40 }}
-        showsVerticalScrollIndicator={false}
-      >
+      <View className="flex-1 px-6">
+        {/* Media Carousel */}
         <Animatable.View
           animation="fadeIn"
           duration={800}
           className={`rounded-2xl ${getCategoryColor()} p-6 mb-6`}
         >
           <View className="items-center">
-            <Text className="text-3xl font-bold text-white font-display text-center mb-1">
+            <Text className="text-3xl font-bold text-white text-center mb-1">
               {sign.name}
             </Text>
-            <Text className="text-white/80 font-medium text-center mb-6">
-              {sign.category.charAt(0).toUpperCase() + sign.category.slice(1)} Sign
+            <Text className="text-white/80 text-center mb-4">
+              {sign.category.charAt(0).toUpperCase() + sign.category.slice(1)}
             </Text>
 
-            <View className="bg-white/20 rounded-xl mb-4 w-full h-72">
-              {sign.images && sign.images.length > 0 ? (
+            <View className="bg-white/20 rounded-xl w-full h-72">
+              {sign.media.length > 0 ? (
                 <Carousel
                   loop
                   width={screenWidth - 80}
-                  height={256}
-                  data={sign.images}
-                  renderItem={renderCarouselItem}
+                  height={288}
+                  data={sign.media}
+                  renderItem={renderMediaItem}
                   autoPlay={false}
                   scrollAnimationDuration={500}
                 />
               ) : (
-                <Image
-                  source={require("../../assets/signs/alphabet/A/angle1.jpg")}
-                  className="w-64 h-64"
-                  resizeMode="contain"
-                />
+                <View className="flex-1 items-center justify-center">
+                  <Ionicons name="warning" size={40} color="white" />
+                </View>
               )}
             </View>
           </View>
         </Animatable.View>
 
+        {/* Sign Info */}
         <Animatable.View
           animation="fadeInUp"
           duration={800}
           delay={200}
-          className="bg-white rounded-2xl p-6 mb-8 shadow-sm"
+          className="bg-white rounded-2xl p-6 mb-6 shadow-sm"
         >
-          <Text className="text-lg font-bold text-accent-700 font-display mb-3">
+          <Text className="text-lg font-bold text-gray-800 mb-3">
             About This Sign
           </Text>
-          <Text className="text-text text-base leading-6">
+          <Text className="text-gray-600 text-base leading-6">
             {sign.description}
           </Text>
         </Animatable.View>
 
+        {/* Actions */}
         <Animatable.View
           animation="fadeInUp"
           duration={800}
           delay={400}
-          className="px-4"
+          className="flex-row space-x-4"
         >
-          <AnimatedButton
-            title="Next Sign"
-            onPress={() => navigation.navigate('SignDetail', { signId: sign.id })}
-            className="w-full bg-warning-500"
-            animation="pulse"
-            iterationCount="infinite"
-            icon="help-circle-outline"
-          />
-
+          <TouchableOpacity
+            className="flex-1 bg-purple-500 py-3 rounded-xl items-center"
+            onPress={handleLearned}
+          >
+            <Text className="text-white font-bold">I Learned This!</Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            className="flex-1 bg-yellow-400 py-3 rounded-xl items-center"
+            onPress={() => navigation.navigate("Quiz", { signId: sign.id })}
+          >
+            <Text className="text-gray-800 font-bold">Test Me</Text>
+          </TouchableOpacity>
         </Animatable.View>
-      </ScrollView>
+      </View>
     </SafeWrapper>
   );
 };
