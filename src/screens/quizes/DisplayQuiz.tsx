@@ -142,7 +142,7 @@ const DisplayQuiz = () => {
                         </View>
 
                         {/* Disabled Live Quiz Button */}
-                        <TouchableOpacity
+                        {/* <TouchableOpacity
                             className="rounded-xl bg-gray-300 py-3 px-4 items-center"
                             onPress={handleLiveQuizPress}
                             disabled
@@ -153,7 +153,7 @@ const DisplayQuiz = () => {
                                     Live Quiz (Coming Soon)
                                 </Text>
                             </View>
-                        </TouchableOpacity>
+                        </TouchableOpacity> */}
                     </Animatable.View>
                 ))}
             </ScrollView>

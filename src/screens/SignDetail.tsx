@@ -11,6 +11,7 @@ import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { RootStackParamList } from "@/types/utils";
 import { useSign } from "@/hooks/useSign";
 import { SignMedia } from "@/types/sign";
+import Loading from "@/components/ui/Loading";
 
 const { width: screenWidth } = Dimensions.get("window");
 type SignDetailNavigationProp = NativeStackNavigationProp<
@@ -22,8 +23,8 @@ const SignDetailScreen = () => {
   const route = useRoute<any>();
   const navigation = useNavigation<SignDetailNavigationProp>();
   const { signId } = route.params;
-  const { signs, markAsLearned } = useSign();
-  
+  const { signs, markAsLearned, loading } = useSign();
+
   const sign = useMemo(() => signs.find((s) => s.id === signId), [signs, signId]);
   const [isPlaying, setIsPlaying] = useState(true);
   const [currentMediaIndex, setCurrentMediaIndex] = useState(0);
@@ -31,7 +32,7 @@ const SignDetailScreen = () => {
   const safeMedia = useMemo(() => sign?.media || [], [sign]);
   const hasMedia = safeMedia.length > 0;
 
-  
+
   const getCategoryColor = () => {
     if (!sign) return "bg-accent-500";
     switch (sign.category) {
@@ -77,9 +78,9 @@ const SignDetailScreen = () => {
         <View className="relative w-full h-72 items-center justify-center">
           <VideoView
             player={player}
-            style={{ 
-              width: "100%", 
-              height: "100%", 
+            style={{
+              width: "100%",
+              height: "100%",
               borderRadius: 16,
               backgroundColor: '#00000020'
             }}
@@ -109,9 +110,9 @@ const SignDetailScreen = () => {
         <View className="flex-1 items-center justify-center">
           <Image
             source={item.uri}
-            style={{ 
-              width: "100%", 
-              height: 280, 
+            style={{
+              width: "100%",
+              height: 280,
               borderRadius: 16,
               maxWidth: 300
             }}
@@ -121,6 +122,11 @@ const SignDetailScreen = () => {
       );
     }
   };
+
+  if (loading) {
+    return <Loading />
+  }
+
 
   if (!sign) {
     return (

@@ -3,7 +3,21 @@ import { View, Text, TouchableOpacity, Image } from 'react-native';
 import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
 import { SignType } from '@/types/sign';
 
-const ProgressCard: React.FC<{ sign: SignType }> = ({ sign }) => {
+type ProgressCardProps = {
+  sign: SignType;
+  onPress?: () => void;
+  showAction?: boolean;
+  actionIcon?: string;
+  onActionPress?: () => void;
+};
+
+const ProgressCard: React.FC<ProgressCardProps> = ({ 
+  sign, 
+  onPress, 
+  showAction = false, 
+  actionIcon = 'checkmark-circle',
+  onActionPress 
+}) => {
     const getCategoryColor = () => {
         switch (sign.category) {
             case 'alphabet': return 'bg-purple-100';
@@ -49,6 +63,7 @@ const ProgressCard: React.FC<{ sign: SignType }> = ({ sign }) => {
         <TouchableOpacity
             className={`p-4 rounded-xl mb-3 flex-row items-center ${getCategoryColor()}`}
             activeOpacity={0.8}
+            onPress={onPress}
         >
             {/* Media Preview */}
             <View className="bg-white/80 p-2 rounded-lg mr-4">
@@ -84,22 +99,32 @@ const ProgressCard: React.FC<{ sign: SignType }> = ({ sign }) => {
                 </Text>
                 <View className="flex-row items-center mt-1">
                     {getCategoryIcon()}
-                    <Text className="text-sm text-gray-700 ml-2 capitalize">
+                    <Text className="text-xs text-gray-700 ml-1 capitalize">
                         {sign.category}
                     </Text>
                     {sign.difficulty && (
-                        <Text className="text-xs text-gray-100 ml-2">
-                             {sign.difficulty}
+                        <Text className="text-xs text-gray-500 ml-2">
+                            • {sign.difficulty}
                         </Text>
                     )}
                 </View>
             </View>
 
-            {/* Learned Status */}
-            {sign.learned ? (
-                <Ionicons name="checkmark-circle" size={24} color="#10B981" />
+            {/* Status/Action Area */}
+            {showAction ? (
+                <TouchableOpacity onPress={onActionPress}>
+                    <Ionicons 
+                        name={actionIcon} 
+                        size={24} 
+                        color={sign.learned ? "#10B981" : "black"} 
+                    />
+                </TouchableOpacity>
             ) : (
-                <Ionicons name="ellipse-outline" size={24} color="#9CA3AF" />
+                sign.learned ? (
+                    <Ionicons name="checkmark-circle" size={24} color="#10B981" />
+                ) : (
+                    <Ionicons name="ellipse-outline" size={24} color="#9CA3AF" />
+                )
             )}
         </TouchableOpacity>
     );

@@ -1,6 +1,6 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { SignType, SignCategory } from '@/types/sign';
-import { QuizQuestion, QuizDifficulty, QuizCategory } from '@/types/quiz';
+import { QuizQuestion, QuizDifficulty } from '@/types/quiz';
 import { allQuizzes } from '@/data/quiz';
 import alphabetData from '@/data/alphabet';
 import { simpleData } from '@/data/simple';
